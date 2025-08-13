@@ -1,29 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Restaurant Inventory Dashboard - QuickBite</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>McDonald's POS Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
-      --twitter-blue: #1DA1F2;
+      --mcd-yellow: #FFB81C;
+      --mcd-red: #C8102E;
       --text-dark: #0F1419;
       --text-light: #536471;
       --border: #D8D9DB;
       --white: #FFFFFF;
       --background: #FFFFFF;
+      --background-dark: #15202B;
+      --text-dark-dark: #FFFFFF;
+      --text-light-dark: #8899A6;
+      --border-dark: #2F3336;
+      --white-dark: #1C2526;
       --gradient-bg: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
     }
 
     [data-theme="dark"] {
-      --background: #15202B;
-      --text-dark: #FFFFFF;
-      --text-light: #8899A6;
-      --border: #2F3336;
-      --white: #1C2526;
+      --background: var(--background-dark);
+      --text-dark: var(--text-dark-dark);
+      --text-light: var(--text-light-dark);
+      --border: var(--border-dark);
+      --white: var(--white-dark);
       --gradient-bg: linear-gradient(135deg, #1c2526 0%, #15202b 100%);
     }
 
@@ -33,81 +39,72 @@
       min-height: 100vh;
       margin: 0;
       padding: 0;
-      transition: opacity 0.5s ease, background 0.3s ease;
-    }
-
-    body.fade-out {
-      opacity: 0;
+      transition: background 0.3s ease;
     }
 
     .container {
       display: flex;
-      min-height: 100vh;
+      max-width: 1200px;
+      margin: 1rem auto;
+      min-height: calc(100vh - 2rem);
     }
 
     .sidebar {
       width: 250px;
       background: var(--white);
-      padding: 1rem;
+      padding: 1.5rem;
       border-right: 1px solid var(--border);
-    }
-
-    .sidebar-logo {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--twitter-blue);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .sidebar-logo svg {
-      width: 24px;
-      height: 24px;
-    }
-
-    .sidebar-nav {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .sidebar-nav button {
-      padding: 0.75rem;
-      text-align: left;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text-dark);
-      background: none;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
-    }
-
-    .sidebar-nav button:hover, .sidebar-nav button.active {
-      background: var(--twitter-blue);
-      color: var(--white);
+      border-radius: 12px 0 0 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .main-content {
       flex: 1;
       padding: 2rem;
       background: var(--gradient-bg);
+      border-radius: 0 12px 12px 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-
-    .header h1 {
+    .logo {
       font-size: 1.5rem;
       font-weight: 800;
+      color: var(--mcd-yellow);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--mcd-red);
+    }
+
+    .nav-btn {
+      display: block;
+      padding: 0.75rem;
       color: var(--text-dark);
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .nav-btn.active, .nav-btn:hover {
+      background: var(--mcd-yellow);
+      color: var(--text-dark);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
     }
 
     .input-group {
@@ -135,15 +132,14 @@
     }
 
     .input-group input:focus, .input-group select:focus {
-      border-color: var(--twitter-blue);
-      box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.1);
+      border-color: var(--mcd-yellow);
+      box-shadow: 0 0 0 3px rgba(255, 184, 28, 0.1);
     }
 
-    .auth-btn {
-      width: 100%;
-      padding: 0.75rem;
-      background: var(--twitter-blue);
-      color: var(--white);
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      background: var(--mcd-yellow);
+      color: var(--text-dark);
       border: none;
       border-radius: 12px;
       font-size: 1rem;
@@ -152,33 +148,25 @@
       transition: background 0.2s ease, transform 0.2s ease;
     }
 
-    .auth-btn:hover {
-      background: #1a91da;
+    .action-btn:hover {
+      background: #e6a518;
       transform: scale(1.05);
     }
 
-    .auth-btn.tap-active {
+    .action-btn.tap-active {
       transform: scale(0.98);
     }
 
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      background: var(--white);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .table th, .table td {
-      padding: 0.75rem;
-      text-align: left;
+    .item-row, .order-row, .history-row, .notification-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
       border-bottom: 1px solid var(--border);
     }
 
-    .table th {
-      background: var(--twitter-blue);
-      color: var(--white);
-      font-weight: 600;
+    .item-row:last-child, .order-row:last-child, .history-row:last-child, .notification-row:last-child {
+      border-bottom: none;
     }
 
     .custom-alert {
@@ -213,14 +201,14 @@
       height: 24px;
       background: none;
       border: none;
-      color: var(--twitter-blue);
+      color: var(--mcd-yellow);
       cursor: pointer;
       transition: transform 0.2s ease, color 0.2s ease;
     }
 
     .custom-alert .close-btn:hover {
       transform: scale(1.2);
-      color: #1a91da;
+      color: #e6a518;
     }
 
     .custom-alert .close-btn svg {
@@ -248,7 +236,7 @@
     .spinner {
       width: 40px;
       height: 40px;
-      border: 4px solid var(--twitter-blue);
+      border: 4px solid var(--mcd-yellow);
       border-top: 4px solid transparent;
       border-radius: 50%;
       animation: spin 1s linear infinite;
@@ -259,8 +247,8 @@
       position: fixed;
       top: 20px;
       right: 20px;
-      background: var(--twitter-blue);
-      color: var(--white);
+      background: var(--mcd-yellow);
+      color: var(--text-dark);
       padding: 0.75rem 1.5rem;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
@@ -297,19 +285,49 @@
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--border);
+        border-radius: 12px 12px 0 0;
       }
 
       .main-content {
-        padding: 1rem;
+        border-radius: 0 0 12px 12px;
       }
 
-      .header h1 {
+      .logo {
         font-size: 1.25rem;
       }
 
-      .table th, .table td {
+      .logo svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .nav-btn {
         font-size: 0.9rem;
         padding: 0.5rem;
+      }
+
+      .input-group label {
+        font-size: 0.9rem;
+      }
+
+      .input-group input, .input-group select {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      .action-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .custom-alert {
+        width: 85%;
+        padding: 1rem;
+      }
+
+      .toast {
+        right: 10px;
+        max-width: 80%;
       }
     }
   </style>
@@ -317,59 +335,178 @@
 <body>
   <div class="container">
     <div class="sidebar">
-      <div class="sidebar-logo">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      <div class="logo">
+        <svg viewBox="0 0 24 24">
+          <path d="M19.5 3C17.65 3 16.5 4.79 16.5 6.38v5.44c0 1.59 1.15 2.88 2.5 2.88V6.38c0-.52.39-1.13 1-1.13s1 .61 1 1.13v8.32c1.35 0 2.5-1.29 2.5-2.88V6.38C24.5 4.79 23.35 3 21.5 3h-2zM2.5 3C.65 3-.5 4.79-.5 6.38v5.44c0 1.59 1.15 2.88 2.5 2.88V6.38c0-.52.39-1.13 1-1.13s1 .61 1 1.13v8.32c1.35 0 2.5-1.29 2.5-2.88V6.38C8.5 4.79 7.35 3 5.5 3h-3z"></path>
         </svg>
-        QuickBite
+        McDonald's POS
       </div>
-      <div class="sidebar-nav">
-        <button class="active" data-tab="inventory">Inventory</button>
-        <button data-tab="purchase-orders">Purchase Orders</button>
-        <button data-tab="transfer-orders">Transfer Orders</button>
-        <button data-tab="production">Production</button>
-        <button data-tab="reports">Reports</button>
-        <button id="signout-btn">Sign Out</button>
-      </div>
+      <button class="nav-btn active" data-tab="menu">Menu Management</button>
+      <button class="nav-btn" data-tab="import">Import Items</button>
+      <button class="nav-btn" data-tab="inventory">Inventory</button>
+      <button class="nav-btn" data-tab="notifications">Notifications</button>
+      <button class="nav-btn" data-tab="purchase">Purchase Orders</button>
+      <button class="nav-btn" data-tab="transfer">Transfer Orders</button>
+      <button class="nav-btn" data-tab="adjustments">Stock Adjustments</button>
+      <button class="nav-btn" data-tab="stocktakes">Inventory Counts</button>
+      <button class="nav-btn" data-tab="production">Production</button>
+      <button class="nav-btn" data-tab="labels">Label Printing</button>
+      <button class="nav-btn" data-tab="history">Inventory History</button>
+      <button class="nav-btn" data-tab="valuation">Valuation Report</button>
     </div>
     <div class="main-content">
-      <div class="header">
-        <h1>Inventory Dashboard</h1>
-        <div id="user-info"></div>
+      <div class="tab-content active" id="menu-tab">
+        <h1 class="text-xl font-semibold mb-4">Menu Management</h1>
+        <div class="input-group">
+          <label for="item-name">Item Name</label>
+          <input type="text" id="item-name" placeholder="Enter item name" aria-label="Enter item name">
+        </div>
+        <div class="input-group">
+          <label for="item-price">Price</label>
+          <input type="number" id="item-price" placeholder="Enter price" step="0.01" aria-label="Enter price">
+        </div>
+        <div class="input-group">
+          <label for="item-category">Category</label>
+          <input type="text" id="item-category" placeholder="Enter category (e.g., Burger, Drink)" aria-label="Enter category">
+        </div>
+        <div class="input-group">
+          <label for="item-stock">Initial Stock</label>
+          <input type="number" id="item-stock" placeholder="Enter stock quantity" aria-label="Enter stock quantity">
+        </div>
+        <div class="input-group">
+          <label for="item-threshold">Low Stock Threshold</label>
+          <input type="number" id="item-threshold" placeholder="Enter low stock threshold" aria-label="Enter low stock threshold">
+        </div>
+        <div class="input-group">
+          <label for="item-cost">Cost</label>
+          <input type="number" id="item-cost" placeholder="Enter cost per unit" step="0.01" aria-label="Enter cost">
+        </div>
+        <div class="input-group">
+          <label for="item-barcode">Barcode</label>
+          <input type="text" id="item-barcode" placeholder="Enter barcode" aria-label="Enter barcode">
+        </div>
+        <button class="action-btn" id="add-item-btn" aria-label="Add menu item">Add Item</button>
+        <h2 class="text-lg font-semibold mt-6 mb-2">Menu Items</h2>
+        <div id="menu-items" class="menu-items"></div>
       </div>
-      <div class="tab-content active" id="inventory-tab">
-        <button class="auth-btn" id="import-csv-btn">Import CSV</button>
-        <button class="auth-btn" id="adjust-stock-btn" style="margin-left: 1rem;">Adjust Stock</button>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>SKU</th>
-              <th>Name</th>
-              <th>Stock</th>
-              <th>Cost</th>
-              <th>Expiration</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="inventory-table"></tbody>
-        </table>
+      <div class="tab-content" id="import-tab">
+        <h1 class="text-xl font-semibold mb-4">Import Items</h1>
+        <div class="input-group">
+          <label for="csv-file">Upload CSV File</label>
+          <input type="file" id="csv-file" accept=".csv" aria-label="Upload CSV file">
+        </div>
+        <button class="action-btn" id="import-csv-btn" aria-label="Import CSV">Import CSV</button>
+        <p class="text-sm text-gray-600 mt-2">CSV format: name,price,category,stock,lowStockThreshold,cost,barcode</p>
       </div>
-      <div class="tab-content" id="purchase-orders-tab">
-        <h2>Purchase Orders</h2>
-        <p>Feature coming soon...</p>
+      <div class="tab-content" id="inventory-tab">
+        <h1 class="text-xl font-semibold mb-4">Inventory</h1>
+        <div id="inventory-items" class="inventory-items"></div>
       </div>
-      <div class="tab-content" id="transfer-orders-tab">
-        <h2>Transfer Orders</h2>
-        <p>Feature coming soon...</p>
+      <div class="tab-content" id="notifications-tab">
+        <h1 class="text-xl font-semibold mb-4">Low Stock Notifications</h1>
+        <div id="notifications" class="notifications"></div>
+      </div>
+      <div class="tab-content" id="purchase-tab">
+        <h1 class="text-xl font-semibold mb-4">Purchase Orders</h1>
+        <div class="input-group">
+          <label for="purchase-vendor">Vendor</label>
+          <input type="text" id="purchase-vendor" placeholder="Enter vendor name" aria-label="Enter vendor name">
+        </div>
+        <div class="input-group">
+          <label for="purchase-item">Item</label>
+          <select id="purchase-item" aria-label="Select item"></select>
+        </div>
+        <div class="input-group">
+          <label for="purchase-quantity">Quantity</label>
+          <input type="number" id="purchase-quantity" placeholder="Enter quantity" aria-label="Enter quantity">
+        </div>
+        <button class="action-btn" id="add-purchase-btn" aria-label="Create purchase order">Create Purchase Order</button>
+        <h2 class="text-lg font-semibold mt-6 mb-2">Purchase Orders</h2>
+        <div id="purchase-orders" class="purchase-orders"></div>
+      </div>
+      <div class="tab-content" id="transfer-tab">
+        <h1 class="text-xl font-semibold mb-4">Transfer Orders</h1>
+        <div class="input-group">
+          <label for="transfer-from">From Store</label>
+          <input type="text" id="transfer-from" placeholder="Enter source store" aria-label="Enter source store">
+        </div>
+        <div class="input-group">
+          <label for="transfer-to">To Store</label>
+          <input type="text" id="transfer-to" placeholder="Enter destination store" aria-label="Enter destination store">
+        </div>
+        <div class="input-group">
+          <label for="transfer-item">Item</label>
+          <select id="transfer-item" aria-label="Select item"></select>
+        </div>
+        <div class="input-group">
+          <label for="transfer-quantity">Quantity</label>
+          <input type="number" id="transfer-quantity" placeholder="Enter quantity" aria-label="Enter quantity">
+        </div>
+        <button class="action-btn" id="add-transfer-btn" aria-label="Create transfer order">Create Transfer Order</button>
+        <h2 class="text-lg font-semibold mt-6 mb-2">Transfer Orders</h2>
+        <div id="transfer-orders" class="transfer-orders"></div>
+      </div>
+      <div class="tab-content" id="adjustments-tab">
+        <h1 class="text-xl font-semibold mb-4">Stock Adjustments</h1>
+        <div class="input-group">
+          <label for="adjust-item">Item</label>
+          <select id="adjust-item" aria-label="Select item"></select>
+        </div>
+        <div class="input-group">
+          <label for="adjust-quantity">Quantity</label>
+          <input type="number" id="adjust-quantity" placeholder="Enter quantity (positive or negative)" aria-label="Enter quantity">
+        </div>
+        <div class="input-group">
+          <label for="adjust-reason">Reason</label>
+          <input type="text" id="adjust-reason" placeholder="Enter reason (e.g., Damage, Loss)" aria-label="Enter reason">
+        </div>
+        <button class="action-btn" id="adjust-stock-btn" aria-label="Adjust stock">Adjust Stock</button>
+      </div>
+      <div class="tab-content" id="stocktakes-tab">
+        <h1 class="text-xl font-semibold mb-4">Inventory Counts</h1>
+        <div class="input-group">
+          <label for="stocktake-item">Item</label>
+          <select id="stocktake-item" aria-label="Select item"></select>
+        </div>
+        <div class="input-group">
+          <label for="stocktake-quantity">Counted Quantity</label>
+          <input type="number" id="stocktake-quantity" placeholder="Enter counted quantity" aria-label="Enter counted quantity">
+        </div>
+        <button class="action-btn" id="stocktake-btn" aria-label="Record stocktake">Record Stocktake</button>
+        <h2 class="text-lg font-semibold mt-6 mb-2">Recent Stocktakes</h2>
+        <div id="stocktakes" class="stocktakes"></div>
       </div>
       <div class="tab-content" id="production-tab">
-        <h2>Production</h2>
-        <p>Feature coming soon...</p>
+        <h1 class="text-xl font-semibold mb-4">Production</h1>
+        <div class="input-group">
+          <label for="production-product">Product</label>
+          <select id="production-product" aria-label="Select product"></select>
+        </div>
+        <div class="input-group">
+          <label for="production-quantity">Quantity Produced</label>
+          <input type="number" id="production-quantity" placeholder="Enter quantity produced" aria-label="Enter quantity produced">
+        </div>
+        <button class="action-btn" id="production-btn" aria-label="Record production">Record Production</button>
+        <h2 class="text-lg font-semibold mt-6 mb-2">Production Records</h2>
+        <div id="production-records" class="production-records"></div>
       </div>
-      <div class="tab-content" id="reports-tab">
-        <h2>Reports</h2>
-        <p>Feature coming soon...</p>
+      <div class="tab-content" id="labels-tab">
+        <h1 class="text-xl font-semibold mb-4">Label Printing</h1>
+        <div class="input-group">
+          <label for="label-item">Item</label>
+          <select id="label-item" aria-label="Select item"></select>
+        </div>
+        <button class="action-btn" id="print-label-btn" aria-label="Print barcode label">Print Label</button>
+        <div id="barcode-preview" class="mt-4"></div>
+      </div>
+      <div class="tab-content" id="history-tab">
+        <h1 class="text-xl font-semibold mb-4">Inventory History</h1>
+        <div id="inventory-history" class="inventory-history"></div>
+      </div>
+      <div class="tab-content" id="valuation-tab">
+        <h1 class="text-xl font-semibold mb-4">Inventory Valuation Report</h1>
+        <button class="action-btn" id="export-valuation-btn" aria-label="Export valuation report">Export Report</button>
+        <div id="valuation-report" class="valuation-report mt-4"></div>
       </div>
     </div>
   </div>
@@ -384,44 +521,6 @@
     <p id="alert-message">An error occurred. Please try again.</p>
   </div>
 
-  <div id="csv-import-modal" class="custom-alert">
-    <button class="close-btn" onclick="hideModal('csv-import-modal')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-    <h2>Import Ingredients</h2>
-    <div class="input-group">
-      <label for="csv-file-input">CSV File</label>
-      <input type="file" id="csv-file-input" accept=".csv" />
-    </div>
-    <button class="auth-btn" id="upload-csv-btn">Upload</button>
-  </div>
-
-  <div id="stock-adjustment-modal" class="custom-alert">
-    <button class="close-btn" onclick="hideModal('stock-adjustment-modal')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-    <h2>Adjust Stock</h2>
-    <div class="input-group">
-      <label for="ingredient-select">Ingredient</label>
-      <select id="ingredient-select"></select>
-    </div>
-    <div class="input-group">
-      <label for="quantity-input">Quantity</label>
-      <input type="number" id="quantity-input" placeholder="Enter quantity" />
-    </div>
-    <div class="input-group">
-      <label for="reason-input">Reason</label>
-      <input type="text" id="reason-input" placeholder="e.g., spoilage, delivery" />
-    </div>
-    <button class="auth-btn" id="submit-adjustment-btn">Submit</button>
-  </div>
-
   <div class="spinner-overlay" id="spinner">
     <div class="spinner"></div>
   </div>
@@ -432,234 +531,874 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+    import { getDatabase, ref, set, onValue, push, update, remove, get } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBOyZ3As4GTuNvjemvPF_SpsC6m6vqtNhc",
-      authDomain: "fire-b-a8878.firebaseapp.com",
-      databaseURL: "https://fire-b-a8878.firebaseio.com",
-      projectId: "fire-b-a8878",
-      storageBucket: "fire-b-a8878.firebasestorage.app",
-      messagingSenderId: "658673187627",
-      appId: "1:658673187627:web:6e4c29af661785f0afa36e",
-      measurementId: "G-V4W97VMSKL"
-    };
-
+   const firebaseConfig = {
+  apiKey: "AIzaSyBOyZ3As4GTuNvjemvPF_SpsC6m6vqtNhc",
+  authDomain: "fire-b-a8878.firebaseapp.com",
+  databaseURL: "https://fire-b-a8878.firebaseio.com",
+  projectId: "fire-b-a8878",
+  storageBucket: "fire-b-a8878.firebasestorage.app",
+  messagingSenderId: "658673187627",
+  appId: "1:658673187627:web:6e4c29af661785f0afa36e",
+  measurementId: "G-V4W97VMSKL"
+};
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    const tabButtons = document.querySelectorAll('.sidebar-nav button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    const signoutBtn = document.getElementById('signout-btn');
-    const userInfo = document.getElementById('user-info');
-    const importCsvBtn = document.getElementById('import-csv-btn');
-    const adjustStockBtn = document.getElementById('adjust-stock-btn');
-    const uploadCsvBtn = document.getElementById('upload-csv-btn');
-    const csvFileInput = document.getElementById('csv-file-input');
-    const submitAdjustmentBtn = document.getElementById('submit-adjustment-btn');
-    const ingredientSelect = document.getElementById('ingredient-select');
-    const quantityInput = document.getElementById('quantity-input');
-    const reasonInput = document.getElementById('reason-input');
-    const inventoryTable = document.getElementById('inventory-table');
-    const customAlert = document.getElementById('custom-alert');
-    const alertMessage = document.getElementById('alert-message');
-    const spinner = document.getElementById('spinner');
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toast-message');
+    const addItemBtn = document.getElementById("add-item-btn");
+    const itemNameInput = document.getElementById("item-name");
+    const itemPriceInput = document.getElementById("item-price");
+    const itemCategoryInput = document.getElementById("item-category");
+    const itemStockInput = document.getElementById("item-stock");
+    const itemThresholdInput = document.getElementById("item-threshold");
+    const itemCostInput = document.getElementById("item-cost");
+    const itemBarcodeInput = document.getElementById("item-barcode");
+    const menuItemsDiv = document.getElementById("menu-items");
+    const csvFileInput = document.getElementById("csv-file");
+    const importCsvBtn = document.getElementById("import-csv-btn");
+    const inventoryItemsDiv = document.getElementById("inventory-items");
+    const notificationsDiv = document.getElementById("notifications");
+    const purchaseVendorInput = document.getElementById("purchase-vendor");
+    const purchaseItemSelect = document.getElementById("purchase-item");
+    const purchaseQuantityInput = document.getElementById("purchase-quantity");
+    const addPurchaseBtn = document.getElementById("add-purchase-btn");
+    const purchaseOrdersDiv = document.getElementById("purchase-orders");
+    const transferFromInput = document.getElementById("transfer-from");
+    const transferToInput = document.getElementById("transfer-to");
+    const transferItemSelect = document.getElementById("transfer-item");
+    const transferQuantityInput = document.getElementById("transfer-quantity");
+    const addTransferBtn = document.getElementById("add-transfer-btn");
+    const transferOrdersDiv = document.getElementById("transfer-orders");
+    const adjustItemSelect = document.getElementById("adjust-item");
+    const adjustQuantityInput = document.getElementById("adjust-quantity");
+    const adjustReasonInput = document.getElementById("adjust-reason");
+    const adjustStockBtn = document.getElementById("adjust-stock-btn");
+    const stocktakeItemSelect = document.getElementById("stocktake-item");
+    const stocktakeQuantityInput = document.getElementById("stocktake-quantity");
+    const stocktakeBtn = document.getElementById("stocktake-btn");
+    const stocktakesDiv = document.getElementById("stocktakes");
+    const productionProductSelect = document.getElementById("production-product");
+    const productionQuantityInput = document.getElementById("production-quantity");
+    const productionBtn = document.getElementById("production-btn");
+    const productionRecordsDiv = document.getElementById("production-records");
+    const labelItemSelect = document.getElementById("label-item");
+    const printLabelBtn = document.getElementById("print-label-btn");
+    const barcodePreviewDiv = document.getElementById("barcode-preview");
+    const inventoryHistoryDiv = document.getElementById("inventory-history");
+    const exportValuationBtn = document.getElementById("export-valuation-btn");
+    const valuationReportDiv = document.getElementById("valuation-report");
+    const customAlert = document.getElementById("custom-alert");
+    const alertMessage = document.getElementById("alert-message");
+    const spinner = document.getElementById("spinner");
+    const toast = document.getElementById("toast");
+    const toastMessage = document.getElementById("toast-message");
+    const navButtons = document.querySelectorAll(".nav-btn");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    let menuItems = {};
 
     function showAlert(message, autoHide = true) {
       alertMessage.textContent = message;
-      customAlert.classList.add('active');
-      if (autoHide) {
-        setTimeout(() => customAlert.classList.remove('active'), 5000);
-      }
+      customAlert.classList.add("active");
+      if (autoHide) setTimeout(hideAlert, 5000);
     }
 
     function hideAlert() {
-      customAlert.classList.remove('active');
-    }
-
-    function showModal(modalId) {
-      document.getElementById(modalId).classList.add('active');
-    }
-
-    function hideModal(modalId) {
-      document.getElementById(modalId).classList.remove('active');
+      customAlert.classList.remove("active");
     }
 
     function showSpinner() {
-      spinner.classList.add('active');
+      spinner.classList.add("active");
     }
 
     function hideSpinner() {
-      spinner.classList.remove('active');
+      spinner.classList.remove("active");
     }
 
     function showToast(message) {
       toastMessage.textContent = message;
-      toast.classList.add('active');
-      setTimeout(() => toast.classList.remove('active'), 3000);
+      toast.classList.add("active");
+      setTimeout(() => toast.classList.remove("active"), 3000);
     }
 
-    function checkAuthState() {
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          userInfo.textContent = `Welcome, ${user.displayName}`;
-          fetchIngredients();
-        } else {
-          document.body.classList.add('fade-out');
-          setTimeout(() => {
-            window.location.href = 'login.html';
-          }, 500);
-        }
-      });
-    }
+    document.querySelector(".custom-alert .close-btn").addEventListener("click", hideAlert);
 
-    async function fetchIngredients() {
+    async function addMenuItem() {
+      const name = itemNameInput.value.trim();
+      const price = parseFloat(itemPriceInput.value);
+      const category = itemCategoryInput.value.trim();
+      const stock = parseInt(itemStockInput.value) || 0;
+      const threshold = parseInt(itemThresholdInput.value) || 10;
+      const cost = parseFloat(itemCostInput.value) || 0;
+      const barcode = itemBarcodeInput.value.trim();
+
+      if (!name || !price || !category || !barcode) {
+        showAlert("Please fill in all required fields.", true);
+        return;
+      }
+
       showSpinner();
       try {
-        const response = await fetch('/api/ingredients');
-        const ingredients = await response.json();
-        renderInventoryTable(ingredients);
-        populateIngredientSelect(ingredients);
+        const menuRef = ref(db, 'menu');
+        const newItemRef = push(menuRef);
+        await set(newItemRef, {
+          name, price, category, stock, lowStockThreshold: threshold, cost, barcode, available: true
+        });
+        await logHistory(newItemRef.key, "adjustment", stock, "Initial stock");
+        showToast("Menu item added successfully");
+        itemNameInput.value = '';
+        itemPriceInput.value = '';
+        itemCategoryInput.value = '';
+        itemStockInput.value = '';
+        itemThresholdInput.value = '';
+        itemCostInput.value = '';
+        itemBarcodeInput.value = '';
       } catch (error) {
-        showAlert('Failed to fetch ingredients', true);
+        showAlert("Failed to add menu item: " + error.message, true);
+      } finally {
+        hideSpinner();
       }
-      hideSpinner();
     }
 
-    function renderInventoryTable(ingredients) {
-      inventoryTable.innerHTML = '';
-      ingredients.forEach(ingredient => {
-        const row = document.createElement('tr');
-        const lowStock = ingredient.current_stock < ingredient.low_stock_threshold ? 'Low Stock' : 'Normal';
-        row.innerHTML = `
-          <td>${ingredient.sku}</td>
-          <td>${ingredient.name}</td>
-          <td>${ingredient.current_stock} ${ingredient.unit}</td>
-          <td>$${ingredient.cost_price}</td>
-          <td>${ingredient.expiration_date}</td>
-          <td>${lowStock}</td>
-          <td><button onclick="generateBarcode('${ingredient.sku}')">Print Barcode</button></td>
-        `;
-        inventoryTable.appendChild(row);
-      });
-    }
-
-    function populateIngredientSelect(ingredients) {
-      ingredientSelect.innerHTML = '<option value="">Select Ingredient</option>';
-      ingredients.forEach(ingredient => {
-        const option = document.createElement('option');
-        option.value = ingredient.id;
-        option.textContent = ingredient.name;
-        ingredientSelect.appendChild(option);
-      });
-    }
-
-    async function handleCsvUpload() {
+    async function importCsv() {
       const file = csvFileInput.files[0];
       if (!file) {
-        showAlert('Please select a CSV file', true);
+        showAlert("Please select a CSV file.", true);
         return;
       }
 
       showSpinner();
-      const fileReader = new FileReader();
-      fileReader.onload = async (e) => {
-        const csvData = Papa.parse(e.target.result, { header: true, skipEmptyLines: true });
-        try {
-          await fetch('/api/ingredients/import', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(csvData.data)
-          });
-          showToast('Ingredients imported successfully');
-          fetchIngredients();
-          hideModal('csv-import-modal');
-        } catch (error) {
-          showAlert('Failed to import ingredients', true);
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (result) => {
+          try {
+            const menuRef = ref(db, 'menu');
+            for (const row of result.data) {
+              const { name, price, category, stock, lowStockThreshold, cost, barcode } = row;
+              if (!name || !price || !category || !barcode) continue;
+              const newItemRef = push(menuRef);
+              await set(newItemRef, {
+                name,
+                price: parseFloat(price) || 0,
+                category,
+                stock: parseInt(stock) || 0,
+                lowStockThreshold: parseInt(lowStockThreshold) || 10,
+                cost: parseFloat(cost) || 0,
+                barcode,
+                available: true
+              });
+              if (stock) await logHistory(newItemRef.key, "adjustment", parseInt(stock), "CSV import");
+            }
+            showToast("Items imported successfully");
+            csvFileInput.value = '';
+          } catch (error) {
+            showAlert("Failed to import items: " + error.message, true);
+          } finally {
+            hideSpinner();
+          }
+        },
+        error: () => {
+          showAlert("Failed to parse CSV file.", true);
+          hideSpinner();
         }
-        hideSpinner();
-      };
-      fileReader.readAsText(file);
+      });
     }
 
-    async function handleStockAdjustment() {
-      const ingredientId = ingredientSelect.value;
-      const quantity = quantityInput.value;
-      const reason = reasonInput.value;
+    async function logHistory(itemId, type, quantity, reason) {
+      const historyRef = ref(db, 'inventoryHistory');
+      const newHistoryRef = push(historyRef);
+      await set(newHistoryRef, {
+        itemId,
+        type,
+        quantity,
+        reason,
+        timestamp: Date.now(),
+        userId: "current-user" // Replace with auth.currentUser.uid in authenticated setup
+      });
+    }
 
-      if (!ingredientId || !quantity || !reason) {
-        showAlert('Please fill in all fields', true);
+    async function checkLowStock() {
+      const menuRef = ref(db, 'menu');
+      const snapshot = await get(menuRef);
+      const items = snapshot.val() || {};
+      const notificationsRef = ref(db, 'notifications');
+      for (const [id, item] of Object.entries(items)) {
+        if (item.stock <= item.lowStockThreshold) {
+          const notificationRef = push(notificationsRef);
+          await set(notificationRef, {
+            itemId: id,
+            message: `Low stock for ${item.name}: ${item.stock} units remaining`,
+            timestamp: Date.now()
+          });
+        }
+      }
+    }
+
+    async function createPurchaseOrder() {
+      const vendor = purchaseVendorInput.value.trim();
+      const itemId = purchaseItemSelect.value;
+      const quantity = parseInt(purchaseQuantityInput.value);
+
+      if (!vendor || !itemId || !quantity) {
+        showAlert("Please fill in all fields.", true);
         return;
       }
 
       showSpinner();
       try {
-        await fetch('/api/stock-adjustments', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ingredientId, quantity, reason })
+        const purchaseRef = ref(db, 'purchaseOrders');
+        const newPurchaseRef = push(purchaseRef);
+        await set(newPurchaseRef, {
+          items: [{ itemId, quantity }],
+          vendor,
+          status: "pending",
+          createdAt: Date.now()
         });
-        showToast('Stock adjusted successfully');
-        fetchIngredients();
-        hideModal('stock-adjustment-modal');
+        showToast("Purchase order created");
+        purchaseVendorInput.value = '';
+        purchaseItemSelect.value = '';
+        purchaseQuantityInput.value = '';
       } catch (error) {
-        showAlert('Failed to adjust stock', true);
+        showAlert("Failed to create purchase order: " + error.message, true);
+      } finally {
+        hideSpinner();
       }
-      hideSpinner();
     }
 
-    function generateBarcode(sku) {
-      const canvas = document.createElement('canvas');
-      JsBarcode(canvas, sku, { format: 'CODE128', displayValue: true });
-      const url = canvas.toDataURL();
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${sku}.png`;
-      link.click();
+    async function createTransferOrder() {
+      const fromStore = transferFromInput.value.trim();
+      const toStore = transferToInput.value.trim();
+      const itemId = transferItemSelect.value;
+      const quantity = parseInt(transferQuantityInput.value);
+
+      if (!fromStore || !toStore || !itemId || !quantity) {
+        showAlert("Please fill in all fields.", true);
+        return;
+      }
+
+      showSpinner();
+      try {
+        const itemRef = ref(db, `menu/${itemId}`);
+        const snapshot = await get(itemRef);
+        const item = snapshot.val();
+        if (item.stock < quantity) {
+          showAlert("Insufficient stock for transfer.", true);
+          return;
+        }
+        const transferRef = ref(db, 'transferOrders');
+        const newTransferRef = push(transferRef);
+        await set(newTransferRef, {
+          items: [{ itemId, quantity }],
+          fromStore,
+          toStore,
+          status: "pending",
+          createdAt: Date.now()
+        });
+        await update(itemRef, { stock: item.stock - quantity });
+        await logHistory(itemId, "transfer", -quantity, `Transferred to ${toStore}`);
+        showToast("Transfer order created");
+        transferFromInput.value = '';
+        transferToInput.value = '';
+        transferItemSelect.value = '';
+        transferQuantityInput.value = '';
+      } catch (error) {
+        showAlert("Failed to create transfer order: " + error.message, true);
+      } finally {
+        hideSpinner();
+      }
+    }
+
+    async function adjustStock() {
+      const itemId = adjustItemSelect.value;
+      const quantity = parseInt(adjustQuantityInput.value);
+      const reason = adjustReasonInput.value.trim();
+
+      if (!itemId || !quantity || !reason) {
+        showAlert("Please fill in all fields.", true);
+        return;
+      }
+
+      showSpinner();
+      try {
+        const itemRef = ref(db, `menu/${itemId}`);
+        const snapshot = await get(itemRef);
+        const item = snapshot.val();
+        const newStock = item.stock + quantity;
+        if (newStock < 0) {
+          showAlert("Stock cannot be negative.", true);
+          return;
+        }
+        await update(itemRef, { stock: newStock });
+        await logHistory(itemId, "adjustment", quantity, reason);
+        showToast("Stock adjusted successfully");
+        adjustItemSelect.value = '';
+        adjustQuantityInput.value = '';
+        adjustReasonInput.value = '';
+      } catch (error) {
+        showAlert("Failed to adjust stock: " + error.message, true);
+      } finally {
+        hideSpinner();
+      }
+    }
+
+    async function recordStocktake() {
+      const itemId = stocktakeItemSelect.value;
+      const quantity = parseInt(stocktakeQuantityInput.value);
+
+      if (!itemId || quantity < 0) {
+        showAlert("Please fill in all fields with valid values.", true);
+        return;
+      }
+
+      showSpinner();
+      try {
+        const itemRef = ref(db, `menu/${itemId}`);
+        const snapshot = await get(itemRef);
+        const item = snapshot.val();
+        await update(itemRef, { stock: quantity });
+        await logHistory(itemId, "stocktake", quantity - item.stock, "Stocktake adjustment");
+        showToast("Stocktake recorded successfully");
+        stocktakeItemSelect.value = '';
+        stocktakeQuantityInput.value = '';
+      } catch (error) {
+        showAlert("Failed to record stocktake: " + error.message, true);
+      } finally {
+        hideSpinner();
+      }
+    }
+
+    async function recordProduction() {
+      const productId = productionProductSelect.value;
+      const quantity = parseInt(productionQuantityInput.value);
+
+      if (!productId || !quantity) {
+        showAlert("Please fill in all fields.", true);
+        return;
+      }
+
+      showSpinner();
+      try {
+        const productRef = ref(db, `menu/${productId}`);
+        const snapshot = await get(productRef);
+        const product = snapshot.val();
+        if (!product.ingredients) {
+          showAlert("Product has no ingredients defined.", true);
+          return;
+        }
+        for (const { itemId, quantity: ingQuantity } of product.ingredients) {
+          const ingredientRef = ref(db, `menu/${itemId}`);
+          const ingSnapshot = await get(ingredientRef);
+          const ingredient = ingSnapshot.val();
+          const required = quantity * ingQuantity;
+          if (ingredient.stock < required) {
+            showAlert(`Insufficient stock for ${ingredient.name}.`, true);
+            return;
+          }
+          await update(ingredientRef, { stock: ingredient.stock - required });
+          await logHistory(itemId, "production", -required, `Used for ${product.name} production`);
+        }
+        await update(productRef, { stock: product.stock + quantity });
+        const productionRef = ref(db, 'production');
+        const newProductionRef = push(productionRef);
+        await set(newProductionRef, {
+          productId,
+          ingredients: product.ingredients,
+          quantityProduced: quantity,
+          timestamp: Date.now()
+        });
+        await logHistory(productId, "production", quantity, "Produced item");
+        showToast("Production recorded successfully");
+        productionProductSelect.value = '';
+        productionQuantityInput.value = '';
+      } catch (error) {
+        showAlert("Failed to record production: " + error.message, true);
+      } finally {
+        hideSpinner();
+      }
+    }
+
+    async function printBarcodeLabel() {
+      const itemId = labelItemSelect.value;
+      if (!itemId) {
+        showAlert("Please select an item.", true);
+        return;
+      }
+
+      showSpinner();
+      try {
+        const itemRef = ref(db, `menu/${itemId}`);
+        const snapshot = await get(itemRef);
+        const item = snapshot.val();
+        barcodePreviewDiv.innerHTML = `<div id="barcode-${itemId}" style="text-align: center; padding: 10px; background: white;">
+          <p>${item.name}</p>
+          <p>$${item.price.toFixed(2)}</p>
+          <p>${item.barcode}</p>
+        </div>`;
+        const canvas = await html2canvas(document.getElementById(`barcode-${itemId}`));
+        const imgData = canvas.toDataURL('image/png');
+        const win = window.open('');
+        win.document.write(`
+          <html>
+            <body>
+              <img src="${imgData}" onload="window.print(); window.close();" />
+            </body>
+          </html>
+        `);
+        showToast("Barcode label printed");
+      } catch (error) {
+        showAlert("Failed to print label: " + error.message, true);
+      } finally {
+        hideSpinner();
+      }
+    }
+
+    function populateItemSelects() {
+      [purchaseItemSelect, transferItemSelect, adjustItemSelect, stocktakeItemSelect, productionProductSelect, labelItemSelect].forEach(select => {
+        select.innerHTML = '<option value="">Select item</option>';
+        Object.entries(menuItems).forEach(([id, item]) => {
+          const option = document.createElement('option');
+          option.value = id;
+          option.textContent = item.name;
+          select.appendChild(option);
+        });
+      });
+    }
+
+    function loadMenuItems() {
+      const menuRef = ref(db, 'menu');
+      onValue(menuRef, (snapshot) => {
+        menuItems = snapshot.val() || {};
+        menuItemsDiv.innerHTML = '';
+        inventoryItemsDiv.innerHTML = '';
+        Object.entries(menuItems).forEach(([id, item]) => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'item-row';
+          itemDiv.innerHTML = `
+            <div>
+              <h3 class="font-bold">${item.name}</h3>
+              <p>Price: $${item.price.toFixed(2)}</p>
+              <p>Category: ${item.category}</p>
+              <p>Stock: ${item.stock}</p>
+              <p>Low Stock Threshold: ${item.lowStockThreshold}</p>
+              <p>Cost: $${item.cost.toFixed(2)}</p>
+              <p>Barcode: ${item.barcode}</p>
+              <p>Status: ${item.available ? 'Available' : 'Unavailable'}</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="action-btn toggle-btn" data-id="${id}" aria-label="${item.available ? 'Mark as unavailable' : 'Mark as available'}">
+                ${item.available ? 'Mark Unavailable' : 'Mark Available'}
+              </button>
+              <button class="action-btn delete-btn" data-id="${id}" aria-label="Delete item">Delete</button>
+            </div>
+          `;
+          menuItemsDiv.appendChild(itemDiv);
+
+          const inventoryDiv = document.createElement('div');
+          inventoryDiv.className = 'item-row';
+          inventoryDiv.innerHTML = `
+            <div>
+              <h3 class="font-bold">${item.name}</h3>
+              <p>Stock: ${item.stock}</p>
+              <p>Low Stock Threshold: ${item.lowStockThreshold}</p>
+              <p>Cost: $${item.cost.toFixed(2)}</p>
+            </div>
+          `;
+          inventoryItemsDiv.appendChild(inventoryDiv);
+        });
+
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const itemRef = ref(db, `menu/${id}`);
+            const snapshot = await get(itemRef);
+            const currentStatus = snapshot.val().available;
+            try {
+              await update(itemRef, { available: !currentStatus });
+              showToast(`Item ${currentStatus ? 'marked unavailable' : 'marked available'}`);
+            } catch (error) {
+              showAlert("Failed to update item status: " + error.message, true);
+            }
+          });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            try {
+              await remove(ref(db, `menu/${id}`));
+              showToast("Item deleted successfully");
+            } catch (error) {
+              showAlert("Failed to delete item: " + error.message, true);
+            }
+          });
+        });
+
+        populateItemSelects();
+        checkLowStock();
+      }, (error) => {
+        showAlert("Failed to load menu items. Check permissions.", true);
+      });
+    }
+
+    function loadNotifications() {
+      const notificationsRef = ref(db, 'notifications');
+      onValue(notificationsRef, (snapshot) => {
+        const notifications = snapshot.val() || {};
+        notificationsDiv.innerHTML = '';
+        Object.entries(notifications).forEach(([id, notif]) => {
+          const notifDiv = document.createElement('div');
+          notifDiv.className = 'notification-row';
+          notifDiv.innerHTML = `
+            <div>
+              <p>${notif.message}</p>
+              <p class="text-sm text-gray-600">${new Date(notif.timestamp).toLocaleString()}</p>
+            </div>
+            <button class="action-btn clear-notif-btn" data-id="${id}" aria-label="Clear notification">Clear</button>
+          `;
+          notificationsDiv.appendChild(notifDiv);
+        });
+
+        document.querySelectorAll('.clear-notif-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            try {
+              await remove(ref(db, `notifications/${id}`));
+              showToast("Notification cleared");
+            } catch (error) {
+              showAlert("Failed to clear notification: " + error.message, true);
+            }
+          });
+        });
+      });
+    }
+
+    function loadPurchaseOrders() {
+      const purchaseRef = ref(db, 'purchaseOrders');
+      onValue(purchaseRef, (snapshot) => {
+        const orders = snapshot.val() || {};
+        purchaseOrdersDiv.innerHTML = '';
+        Object.entries(orders).forEach(([id, order]) => {
+          const orderDiv = document.createElement('div');
+          orderDiv.className = 'order-row';
+          const itemNames = order.items.map(item => menuItems[item.itemId]?.name || 'Unknown').join(', ');
+          orderDiv.innerHTML = `
+            <div>
+              <p>Vendor: ${order.vendor}</p>
+              <p>Items: ${itemNames}</p>
+              <p>Status: ${order.status}</p>
+              <p>Created: ${new Date(order.createdAt).toLocaleString()}</p>
+            </div>
+            <div class="flex gap-2">
+              <button class="action-btn complete-purchase-btn" data-id="${id}" aria-label="Complete purchase order" ${order.status === 'completed' ? 'disabled' : ''}>Complete</button>
+              <button class="action-btn export-purchase-btn" data-id="${id}" aria-label="Export purchase order">Export</button>
+            </div>
+          `;
+          purchaseOrdersDiv.appendChild(orderDiv);
+        });
+
+        document.querySelectorAll('.complete-purchase-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const orderRef = ref(db, `purchaseOrders/${id}`);
+            const snapshot = await get(orderRef);
+            const order = snapshot.val();
+            try {
+              for (const { itemId, quantity } of order.items) {
+                const itemRef = ref(db, `menu/${itemId}`);
+                const itemSnapshot = await get(itemRef);
+                const item = itemSnapshot.val();
+                await update(itemRef, { stock: item.stock + quantity });
+                await logHistory(itemId, "purchase", quantity, `Received from ${order.vendor}`);
+              }
+              await update(orderRef, { status: "completed" });
+              showToast("Purchase order completed");
+            } catch (error) {
+              showAlert("Failed to complete purchase order: " + error.message, true);
+            }
+          });
+        });
+
+        document.querySelectorAll('.export-purchase-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const orderRef = ref(db, `purchaseOrders/${id}`);
+            const snapshot = await get(orderRef);
+            const order = snapshot.val();
+            const csv = order.items.map(item => `${menuItems[item.itemId]?.name || 'Unknown'},${item.quantity}`).join('\n');
+            const blob = new Blob([`Item,Quantity\n${csv}`], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `purchase_order_${id}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Purchase order exported");
+          });
+        });
+      });
+    }
+
+    function loadTransferOrders() {
+      const transferRef = ref(db, 'transferOrders');
+      onValue(transferRef, (snapshot) => {
+        const orders = snapshot.val() || {};
+        transferOrdersDiv.innerHTML = '';
+        Object.entries(orders).forEach(([id, order]) => {
+          const orderDiv = document.createElement('div');
+          orderDiv.className = 'order-row';
+          const itemNames = order.items.map(item => menuItems[item.itemId]?.name || 'Unknown').join(', ');
+          orderDiv.innerHTML = `
+            <div>
+              <p>From: ${order.fromStore}</p>
+              <p>To: ${order.toStore}</p>
+              <p>Items: ${itemNames}</p>
+              <p>Status: ${order.status}</p>
+              <p>Created: ${new Date(order.createdAt).toLocaleString()}</p>
+            </div>
+            <button class="action-btn complete-transfer-btn" data-id="${id}" aria-label="Complete transfer order" ${order.status === 'completed' ? 'disabled' : ''}>Complete</button>
+          `;
+          transferOrdersDiv.appendChild(orderDiv);
+        });
+
+        document.querySelectorAll('.complete-transfer-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const orderRef = ref(db, `transferOrders/${id}`);
+            const snapshot = await get(orderRef);
+            const order = snapshot.val();
+            try {
+              for (const { itemId, quantity } of order.items) {
+                await logHistory(itemId, "transfer", quantity, `Received at ${order.toStore}`);
+              }
+              await update(orderRef, { status: "completed" });
+              showToast("Transfer order completed");
+            } catch (error) {
+              showAlert("Failed to complete transfer order: " + error.message, true);
+            }
+          });
+        });
+      });
+    }
+
+    function loadProductionRecords() {
+      const productionRef = ref(db, 'production');
+      onValue(productionRef, (snapshot) => {
+        const records = snapshot.val() || {};
+        productionRecordsDiv.innerHTML = '';
+        Object.entries(records).forEach(([id, record]) => {
+          const recordDiv = document.createElement('div');
+          recordDiv.className = 'item-row';
+          const ingredientNames = record.ingredients.map(ing => `${menuItems[ing.itemId]?.name || 'Unknown'} (${ing.quantity})`).join(', ');
+          recordDiv.innerHTML = `
+            <div>
+              <p>Product: ${menuItems[record.productId]?.name || 'Unknown'}</p>
+              <p>Quantity Produced: ${record.quantityProduced}</p>
+              <p>Ingredients: ${ingredientNames}</p>
+              <p>Timestamp: ${new Date(record.timestamp).toLocaleString()}</p>
+            </div>
+          `;
+          productionRecordsDiv.appendChild(recordDiv);
+        });
+      });
+    }
+
+    function loadInventoryHistory() {
+      const historyRef = ref(db, 'inventoryHistory');
+      onValue(historyRef, (snapshot) => {
+        const history = snapshot.val() || {};
+        inventoryHistoryDiv.innerHTML = '';
+        Object.entries(history).forEach(([id, entry]) => {
+          const historyDiv = document.createElement('div');
+          historyDiv.className = 'history-row';
+          historyDiv.innerHTML = `
+            <div>
+              <p>Item: ${menuItems[entry.itemId]?.name || 'Unknown'}</p>
+              <p>Type: ${entry.type}</p>
+              <p>Quantity: ${entry.quantity}</p>
+              <p>Reason: ${entry.reason}</p>
+              <p>Timestamp: ${new Date(entry.timestamp).toLocaleString()}</p>
+            </div>
+          `;
+          inventoryHistoryDiv.appendChild(historyDiv);
+        });
+      });
+    }
+
+    function loadValuationReport() {
+      valuationReportDiv.innerHTML = `
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="p-2 border">Item</th>
+              <th class="p-2 border">Stock</th>
+              <th class="p-2 border">Cost</th>
+              <th class="p-2 border">Total Cost</th>
+              <th class="p-2 border">Price</th>
+              <th class="p-2 border">Potential Profit</th>
+            </tr>
+          </thead>
+          <tbody id="valuation-table"></tbody>
+        </table>
+      `;
+      const tbody = document.getElementById('valuation-table');
+      let totalCost = 0, totalProfit = 0;
+      Object.entries(menuItems).forEach(([id, item]) => {
+        const itemCost = item.stock * item.cost;
+        const itemProfit = item.stock * (item.price - item.cost);
+        totalCost += itemCost;
+        totalProfit += itemProfit;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="p-2 border">${item.name}</td>
+          <td class="p-2 border">${item.stock}</td>
+          <td class="p-2 border">$${item.cost.toFixed(2)}</td>
+          <td class="p-2 border">$${itemCost.toFixed(2)}</td>
+          <td class="p-2 border">$${item.price.toFixed(2)}</td>
+          <td class="p-2 border">$${itemProfit.toFixed(2)}</td>
+        `;
+        tbody.appendChild(row);
+      });
+      const summary = document.createElement('div');
+      summary.className = 'mt-4';
+      summary.innerHTML = `
+        <p><strong>Total Inventory Cost:</strong> $${totalCost.toFixed(2)}</p>
+        <p><strong>Total Potential Profit:</strong> $${totalProfit.toFixed(2)}</p>
+      `;
+      valuationReportDiv.appendChild(summary);
+    }
+
+    function exportValuationReport() {
+      const csv = ['Item,Stock,Cost,Total Cost,Price,Potential Profit'];
+      let totalCost = 0, totalProfit = 0;
+      Object.entries(menuItems).forEach(([id, item]) => {
+        const itemCost = item.stock * item.cost;
+        const itemProfit = item.stock * (item.price - item.cost);
+        totalCost += itemCost;
+        totalProfit += itemProfit;
+        csv.push(`${item.name},${item.stock},${item.cost.toFixed(2)},${itemCost.toFixed(2)},${item.price.toFixed(2)},${itemProfit.toFixed(2)}`);
+      });
+      csv.push(`Total,,${totalCost.toFixed(2)},,,${totalProfit.toFixed(2)}`);
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'inventory_valuation.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Valuation report exported");
     }
 
     function setupTabListeners() {
-      tabButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          tabButtons.forEach(b => b.classList.remove('active'));
-          tabContents.forEach(c => c.classList.remove('active'));
-          btn.classList.add('active');
-          document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
+      navButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          navButtons.forEach(b => b.classList.remove("active"));
+          tabContents.forEach(c => c.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById(`${btn.dataset.tab}-tab`).classList.add("active");
+          if (btn.dataset.tab === 'valuation') loadValuationReport();
         });
       });
     }
 
-    function setupEventListeners() {
-      document.querySelector('.custom-alert .close-btn').addEventListener('click', hideAlert);
-      importCsvBtn.addEventListener('click', () => showModal('csv-import-modal'));
-      adjustStockBtn.addEventListener('click', () => showModal('stock-adjustment-modal'));
-      uploadCsvBtn.addEventListener('click', handleCsvUpload);
-      submitAdjustmentBtn.addEventListener('click', handleStockAdjustment);
-      signoutBtn.addEventListener('click', async () => {
-        try {
-          await signOut(auth);
-          document.body.classList.add('fade-out');
-          setTimeout(() => {
-            window.location.href = 'login.html';
-          }, 500);
-        } catch (error) {
-          showAlert('Failed to sign out', true);
-        }
-      });
+    function setupListeners() {
+      if (addItemBtn) {
+        addItemBtn.addEventListener("click", () => {
+          addMenuItem();
+          addItemBtn.classList.add("tap-active");
+          setTimeout(() => addItemBtn.classList.remove("tap-active"), 100);
+        });
+        itemNameInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
+        itemPriceInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
+        itemCategoryInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
+        itemStockInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
+        itemThresholdInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
+        itemCostInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
+        itemBarcodeInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
+      }
+      if (importCsvBtn) {
+        importCsvBtn.addEventListener("click", () => {
+          importCsv();
+          importCsvBtn.classList.add("tap-active");
+          setTimeout(() => importCsvBtn.classList.remove("tap-active"), 100);
+        });
+      }
+      if (addPurchaseBtn) {
+        addPurchaseBtn.addEventListener("click", () => {
+          createPurchaseOrder();
+          addPurchaseBtn.classList.add("tap-active");
+          setTimeout(() => addPurchaseBtn.classList.remove("tap-active"), 100);
+        });
+        purchaseVendorInput.addEventListener("keypress", (e) => { if (e.key === "Enter") createPurchaseOrder(); });
+        purchaseQuantityInput.addEventListener("keypress", (e) => { if (e.key === "Enter") createPurchaseOrder(); });
+      }
+      if (addTransferBtn) {
+        addTransferBtn.addEventListener("click", () => {
+          createTransferOrder();
+          addTransferBtn.classList.add("tap-active");
+          setTimeout(() => addTransferBtn.classList.remove("tap-active"), 100);
+        });
+        transferFromInput.addEventListener("keypress", (e) => { if (e.key === "Enter") createTransferOrder(); });
+        transferToInput.addEventListener("keypress", (e) => { if (e.key === "Enter") createTransferOrder(); });
+        transferQuantityInput.addEventListener("keypress", (e) => { if (e.key === "Enter") createTransferOrder(); });
+      }
+      if (adjustStockBtn) {
+        adjustStockBtn.addEventListener("click", () => {
+          adjustStock();
+          adjustStockBtn.classList.add("tap-active");
+          setTimeout(() => adjustStockBtn.classList.remove("tap-active"), 100);
+        });
+        adjustQuantityInput.addEventListener("keypress", (e) => { if (e.key === "Enter") adjustStock(); });
+        adjustReasonInput.addEventListener("keypress", (e) => { if (e.key === "Enter") adjustStock(); });
+      }
+      if (stocktakeBtn) {
+        stocktakeBtn.addEventListener("click", () => {
+          recordStocktake();
+          stocktakeBtn.classList.add("tap-active");
+          setTimeout(() => stocktakeBtn.classList.remove("tap-active"), 100);
+        });
+        stocktakeQuantityInput.addEventListener("keypress", (e) => { if (e.key === "Enter") recordStocktake(); });
+      }
+      if (productionBtn) {
+        productionBtn.addEventListener("click", () => {
+          recordProduction();
+          productionBtn.classList.add("tap-active");
+          setTimeout(() => productionBtn.classList.remove("tap-active"), 100);
+        });
+        productionQuantityInput.addEventListener("keypress", (e) => { if (e.key === "Enter") recordProduction(); });
+      }
+      if (printLabelBtn) {
+        printLabelBtn.addEventListener("click", () => {
+          printBarcodeLabel();
+          printLabelBtn.classList.add("tap-active");
+          setTimeout(() => printLabelBtn.classList.remove("tap-active"), 100);
+        });
+      }
+      if (exportValuationBtn) {
+        exportValuationBtn.addEventListener("click", () => {
+          exportValuationReport();
+          exportValuationBtn.classList.add("tap-active");
+          setTimeout(() => exportValuationBtn.classList.remove("tap-active"), 100);
+        });
+      }
     }
 
     function applyTheme() {
-      const theme = localStorage.getItem('theme') || 'light';
-      document.documentElement.setAttribute('data-theme', theme);
+      const theme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", theme);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
       applyTheme();
-      checkAuthState();
       setupTabListeners();
-      setupEventListeners();
+      setupListeners();
+      loadMenuItems();
+      loadNotifications();
+      loadPurchaseOrders();
+      loadTransferOrders();
+      loadProductionRecords();
+      loadInventoryHistory();
     });
   </script>
 </body>
