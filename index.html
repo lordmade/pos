@@ -403,6 +403,20 @@
           <input type="file" id="item-image" accept="image/*" aria-label="Upload item image">
         </div>
         <button class="action-btn" id="add-item-btn" aria-label="Add menu item">Add Item</button>
+        <h2 class="text-lg font-semibold mt-6 mb-2">Manage Ingredients</h2>
+        <div class="input-group">
+          <label for="ingredient-item">Menu Item</label>
+          <select id="ingredient-item" aria-label="Select menu item for ingredients"></select>
+        </div>
+        <div class="input-group">
+          <label for="ingredient-select">Add Ingredient</label>
+          <select id="ingredient-select" aria-label="Select ingredient"></select>
+        </div>
+        <div class="input-group">
+          <label for="ingredient-quantity">Quantity</label>
+          <input type="number" id="ingredient-quantity" placeholder="Enter ingredient quantity" min="0" step="0.01" aria-label="Enter ingredient quantity">
+        </div>
+        <button class="action-btn" id="add-ingredient-btn" aria-label="Add ingredient">Add Ingredient</button>
         <h2 class="text-lg font-semibold mt-6 mb-2">Menu Items</h2>
         <div id="menu-items" class="menu-items"></div>
       </div>
@@ -413,7 +427,8 @@
           <input type="file" id="csv-file" accept=".csv" aria-label="Upload CSV file">
         </div>
         <button class="action-btn" id="import-csv-btn" aria-label="Import CSV">Import CSV</button>
-        <p class="text-sm text-gray-600 mt-2">CSV format: name,price,category,stock,lowStockThreshold,cost,barcode,imageUrl</p>
+        <p class="text-sm text-gray-600 mt-2">CSV format: name,price,category,stock,lowStockThreshold,cost,barcode,imageUrl,ingredients</p>
+        <p class="text-sm text-gray-600">Ingredients format: [{"itemId":"id","quantity":number},...]</p>
       </div>
       <div class="tab-content" id="inventory-tab">
         <h1 class="text-xl font-semibold mb-4">Inventory</h1>
@@ -548,6 +563,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
     import { getDatabase, ref, set, onValue, push, update, remove, get } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
    const firebaseConfig = {
@@ -562,11 +578,12 @@
 };
 
     const cloudinaryConfig = {
-      cloudName: "YOUR_CLOUDINARY_CLOUD_NAME",
-      uploadPreset: "YOUR_CLOUDINARY_UPLOAD_PRESET"
+      cloudName: "dqkujefxj",
+      uploadPreset: "banter_box"
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getDatabase(app);
 
     const addItemBtn = document.getElementById("add-item-btn");
@@ -578,6 +595,10 @@
     const itemCostInput = document.getElementById("item-cost");
     const itemBarcodeInput = document.getElementById("item-barcode");
     const itemImageInput = document.getElementById("item-image");
+    const ingredientItemSelect = document.getElementById("ingredient-item");
+    const ingredientSelect = document.getElementById("ingredient-select");
+    const ingredientQuantityInput = document.getElementById("ingredient-quantity");
+    const addIngredientBtn = document.getElementById("add-ingredient-btn");
     const menuItemsDiv = document.getElementById("menu-items");
     const csvFileInput = document.getElementById("csv-file");
     const importCsvBtn = document.getElementById("import-csv-btn");
@@ -621,6 +642,13 @@
     const tabContents = document.querySelectorAll(".tab-content");
 
     let menuItems = {};
+
+    // Check authentication
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = 'login.html'; // Redirect to login page if not authenticated
+      }
+    });
 
     async function uploadImage(file) {
       const formData = new FormData();
@@ -693,7 +721,7 @@
         const menuRef = ref(db, 'menu');
         const newItemRef = push(menuRef);
         await set(newItemRef, {
-          name, price, category, stock, lowStockThreshold: threshold, cost, barcode, available: true, imageUrl
+          name, price, category, stock, lowStockThreshold: threshold, cost, barcode, available: true, imageUrl, ingredients: []
         });
         await logHistory(newItemRef.key, "adjustment", stock, "Initial stock");
         showToast("Menu item added successfully");
@@ -707,6 +735,45 @@
         itemImageInput.value = '';
       } catch (error) {
         showAlert("Failed to add menu item: " + error.message, true);
+      } finally {
+        hideSpinner();
+      }
+    }
+
+    async function addIngredient() {
+      const itemId = ingredientItemSelect.value;
+      const ingredientId = ingredientSelect.value;
+      const quantity = parseFloat(ingredientQuantityInput.value);
+
+      if (!itemId || !ingredientId || !quantity || quantity <= 0) {
+        showAlert("Please select a menu item, ingredient, and valid quantity.", true);
+        return;
+      }
+
+      if (itemId === ingredientId) {
+        showAlert("An item cannot be an ingredient of itself.", true);
+        return;
+      }
+
+      showSpinner();
+      try {
+        const itemRef = ref(db, `menu/${itemId}`);
+        const snapshot = await get(itemRef);
+        const item = snapshot.val();
+        const ingredients = item.ingredients || [];
+        // Prevent duplicate ingredients
+        if (ingredients.some(ing => ing.itemId === ingredientId)) {
+          showAlert("This ingredient is already added.", true);
+          return;
+        }
+        ingredients.push({ itemId: ingredientId, quantity });
+        await update(itemRef, { ingredients });
+        showToast("Ingredient added successfully");
+        ingredientItemSelect.value = '';
+        ingredientSelect.value = '';
+        ingredientQuantityInput.value = '';
+      } catch (error) {
+        showAlert("Failed to add ingredient: " + error.message, true);
       } finally {
         hideSpinner();
       }
@@ -727,8 +794,9 @@
           try {
             const menuRef = ref(db, 'menu');
             for (const row of result.data) {
-              const { name, price, category, stock, lowStockThreshold, cost, barcode, imageUrl } = row;
+              const { name, price, category, stock, lowStockThreshold, cost, barcode, imageUrl, ingredients } = row;
               if (!name || !price || !category || !barcode) continue;
+              const parsedIngredients = ingredients ? JSON.parse(ingredients) : [];
               const newItemRef = push(menuRef);
               await set(newItemRef, {
                 name,
@@ -739,6 +807,7 @@
                 cost: parseFloat(cost) || 0,
                 barcode,
                 imageUrl: imageUrl || '',
+                ingredients: parsedIngredients,
                 available: true
               });
               if (stock) await logHistory(newItemRef.key, "adjustment", parseInt(stock), "CSV import");
@@ -767,7 +836,7 @@
         quantity,
         reason,
         timestamp: Date.now(),
-        userId: "current-user" // Replace with auth.currentUser.uid in authenticated setup
+        userId: auth.currentUser?.uid || "anonymous"
       });
     }
 
@@ -935,7 +1004,7 @@
         const productRef = ref(db, `menu/${productId}`);
         const snapshot = await get(productRef);
         const product = snapshot.val();
-        if (!product.ingredients) {
+        if (!product.ingredients || product.ingredients.length === 0) {
           showAlert("Product has no ingredients defined.", true);
           return;
         }
@@ -1008,7 +1077,7 @@
     }
 
     function populateItemSelects() {
-      [purchaseItemSelect, transferItemSelect, adjustItemSelect, stocktakeItemSelect, productionProductSelect, labelItemSelect].forEach(select => {
+      [purchaseItemSelect, transferItemSelect, adjustItemSelect, stocktakeItemSelect, productionProductSelect, labelItemSelect, ingredientItemSelect, ingredientSelect].forEach(select => {
         select.innerHTML = '<option value="">Select item</option>';
         Object.entries(menuItems).forEach(([id, item]) => {
           const option = document.createElement('option');
@@ -1026,6 +1095,9 @@
         menuItemsDiv.innerHTML = '';
         inventoryItemsDiv.innerHTML = '';
         Object.entries(menuItems).forEach(([id, item]) => {
+          const ingredientsList = item.ingredients && item.ingredients.length > 0 
+            ? item.ingredients.map(ing => `${menuItems[ing.itemId]?.name || 'Unknown'} (${ing.quantity})`).join(', ')
+            : 'None';
           const itemDiv = document.createElement('div');
           itemDiv.className = 'item-row';
           itemDiv.innerHTML = `
@@ -1039,6 +1111,7 @@
                 <p>Low Stock Threshold: ${item.lowStockThreshold}</p>
                 <p>Cost: R${item.cost.toFixed(2)}</p>
                 <p>Barcode: ${item.barcode}</p>
+                <p>Ingredients: ${ingredientsList}</p>
                 <p>Status: ${item.available ? 'Available' : 'Unavailable'}</p>
               </div>
             </div>
@@ -1047,6 +1120,7 @@
                 ${item.available ? 'Mark Unavailable' : 'Mark Available'}
               </button>
               <button class="action-btn delete-btn" data-id="${id}" aria-label="Delete item">Delete</button>
+              <button class="action-btn remove-ingredient-btn" data-id="${id}" aria-label="Remove ingredients">Remove Ingredients</button>
             </div>
           `;
           menuItemsDiv.appendChild(itemDiv);
@@ -1061,6 +1135,7 @@
                 <p>Stock: ${item.stock}</p>
                 <p>Low Stock Threshold: ${item.lowStockThreshold}</p>
                 <p>Cost: R${item.cost.toFixed(2)}</p>
+                <p>Ingredients: ${ingredientsList}</p>
               </div>
             </div>
           `;
@@ -1094,10 +1169,22 @@
           });
         });
 
+        document.querySelectorAll('.remove-ingredient-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            try {
+              await update(ref(db, `menu/${id}`), { ingredients: [] });
+              showToast("Ingredients removed successfully");
+            } catch (error) {
+              showAlert("Failed to remove ingredients: " + error.message, true);
+            }
+          });
+        });
+
         populateItemSelects();
         checkLowStock();
       }, (error) => {
-        showAlert("Failed to load menu items. Check permissions.", true);
+        showAlert("Failed to load menu items. Check permissions or authentication.", true);
       });
     }
 
@@ -1376,6 +1463,14 @@
         itemCostInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
         itemBarcodeInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
         itemImageInput.addEventListener("change", () => { if (itemImageInput.files[0]) showToast("Image selected"); });
+      }
+      if (addIngredientBtn) {
+        addIngredientBtn.addEventListener("click", () => {
+          addIngredient();
+          addIngredientBtn.classList.add("tap-active");
+          setTimeout(() => addIngredientBtn.classList.remove("tap-active"), 100);
+        });
+        ingredientQuantityInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addIngredient(); });
       }
       if (importCsvBtn) {
         importCsvBtn.addEventListener("click", () => {
