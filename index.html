@@ -355,6 +355,7 @@
         McDonald's POS
       </div>
       <button class="nav-btn active" data-tab="menu">Menu Management</button>
+      <button class="nav-btn" data-tab="ingredients">Ingredient Management</button>
       <button class="nav-btn" data-tab="import">Import Items</button>
       <button class="nav-btn" data-tab="inventory">Inventory</button>
       <button class="nav-btn" data-tab="notifications">Notifications</button>
@@ -420,6 +421,43 @@
         <h2 class="text-lg font-semibold mt-6 mb-2">Menu Items</h2>
         <div id="menu-items" class="menu-items"></div>
       </div>
+      <div class="tab-content" id="ingredients-tab">
+        <h1 class="text-xl font-semibold mb-4">Ingredient Management</h1>
+        <div class="input-group">
+          <label for="ing-name">Ingredient Name</label>
+          <input type="text" id="ing-name" placeholder="Enter ingredient name" aria-label="Enter ingredient name">
+        </div>
+        <div class="input-group">
+          <label for="ing-cost">Cost (R per unit)</label>
+          <input type="number" id="ing-cost" placeholder="Enter cost" step="0.01" aria-label="Enter cost">
+        </div>
+        <div class="input-group">
+          <label for="ing-stock">Initial Stock</label>
+          <input type="number" id="ing-stock" placeholder="Enter stock quantity" aria-label="Enter stock quantity">
+        </div>
+        <div class="input-group">
+          <label for="ing-threshold">Low Stock Threshold</label>
+          <input type="number" id="ing-threshold" placeholder="Enter low stock threshold" aria-label="Enter low stock threshold">
+        </div>
+        <div class="input-group">
+          <label for="ing-unit">Unit</label>
+          <select id="ing-unit" aria-label="Select unit">
+            <option value="unit">Unit</option>
+            <option value="kg">kg</option>
+            <option value="g">g</option>
+            <option value="l">l</option>
+            <option value="ml">ml</option>
+            <option value="slice">slice</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="ing-barcode">Barcode</label>
+          <input type="text" id="ing-barcode" placeholder="Enter barcode" aria-label="Enter barcode">
+        </div>
+        <button class="action-btn" id="add-ing-btn" aria-label="Add ingredient">Add Ingredient</button>
+        <h2 class="text-lg font-semibold mt-6 mb-2">Raw Ingredients</h2>
+        <div id="ing-list" class="menu-items"></div>
+      </div>
       <div class="tab-content" id="import-tab">
         <h1 class="text-xl font-semibold mb-4">Import Items</h1>
         <div class="input-group">
@@ -428,11 +466,14 @@
         </div>
         <button class="action-btn" id="import-csv-btn" aria-label="Import CSV">Import CSV</button>
         <p class="text-sm text-gray-600 mt-2">CSV format: name,price,category,stock,lowStockThreshold,cost,barcode,imageUrl,ingredients</p>
-        <p class="text-sm text-gray-600">Ingredients format: [{"itemId":"id","quantity":number},...]</p>
+        <p class="text-sm text-gray-600">Ingredients format: [{"ingredientId":"id","quantity":number},...]</p>
       </div>
       <div class="tab-content" id="inventory-tab">
         <h1 class="text-xl font-semibold mb-4">Inventory</h1>
-        <div id="inventory-items" class="inventory-items"></div>
+        <h2 class="text-lg font-semibold mt-6 mb-2">Menu Items Inventory</h2>
+        <div id="menu-inventory" class="inventory-items"></div>
+        <h2 class="text-lg font-semibold mt-6 mb-2">Raw Ingredients Inventory</h2>
+        <div id="ingredients-inventory" class="inventory-items"></div>
       </div>
       <div class="tab-content" id="notifications-tab">
         <h1 class="text-xl font-semibold mb-4">Low Stock Notifications</h1>
@@ -443,6 +484,13 @@
         <div class="input-group">
           <label for="purchase-vendor">Vendor</label>
           <input type="text" id="purchase-vendor" placeholder="Enter vendor name" aria-label="Enter vendor name">
+        </div>
+        <div class="input-group">
+          <label for="purchase-type">Type</label>
+          <select id="purchase-type" aria-label="Select type">
+            <option value="menu">Menu Item</option>
+            <option value="ingredient">Raw Ingredient</option>
+          </select>
         </div>
         <div class="input-group">
           <label for="purchase-item">Item</label>
@@ -467,6 +515,13 @@
           <input type="text" id="transfer-to" placeholder="Enter destination store" aria-label="Enter destination store">
         </div>
         <div class="input-group">
+          <label for="transfer-type">Type</label>
+          <select id="transfer-type" aria-label="Select type">
+            <option value="menu">Menu Item</option>
+            <option value="ingredient">Raw Ingredient</option>
+          </select>
+        </div>
+        <div class="input-group">
           <label for="transfer-item">Item</label>
           <select id="transfer-item" aria-label="Select item"></select>
         </div>
@@ -480,6 +535,13 @@
       </div>
       <div class="tab-content" id="adjustments-tab">
         <h1 class="text-xl font-semibold mb-4">Stock Adjustments</h1>
+        <div class="input-group">
+          <label for="adjust-type">Type</label>
+          <select id="adjust-type" aria-label="Select type">
+            <option value="menu">Menu Item</option>
+            <option value="ingredient">Raw Ingredient</option>
+          </select>
+        </div>
         <div class="input-group">
           <label for="adjust-item">Item</label>
           <select id="adjust-item" aria-label="Select item"></select>
@@ -496,6 +558,13 @@
       </div>
       <div class="tab-content" id="stocktakes-tab">
         <h1 class="text-xl font-semibold mb-4">Inventory Counts</h1>
+        <div class="input-group">
+          <label for="stocktake-type">Type</label>
+          <select id="stocktake-type" aria-label="Select type">
+            <option value="menu">Menu Item</option>
+            <option value="ingredient">Raw Ingredient</option>
+          </select>
+        </div>
         <div class="input-group">
           <label for="stocktake-item">Item</label>
           <select id="stocktake-item" aria-label="Select item"></select>
@@ -524,6 +593,13 @@
       </div>
       <div class="tab-content" id="labels-tab">
         <h1 class="text-xl font-semibold mb-4">Label Printing</h1>
+        <div class="input-group">
+          <label for="label-type">Type</label>
+          <select id="label-type" aria-label="Select type">
+            <option value="menu">Menu Item</option>
+            <option value="ingredient">Raw Ingredient</option>
+          </select>
+        </div>
         <div class="input-group">
           <label for="label-item">Item</label>
           <select id="label-item" aria-label="Select item"></select>
@@ -600,25 +676,38 @@
     const ingredientQuantityInput = document.getElementById("ingredient-quantity");
     const addIngredientBtn = document.getElementById("add-ingredient-btn");
     const menuItemsDiv = document.getElementById("menu-items");
+    const addIngBtn = document.getElementById("add-ing-btn");
+    const ingNameInput = document.getElementById("ing-name");
+    const ingCostInput = document.getElementById("ing-cost");
+    const ingStockInput = document.getElementById("ing-stock");
+    const ingThresholdInput = document.getElementById("ing-threshold");
+    const ingUnitSelect = document.getElementById("ing-unit");
+    const ingBarcodeInput = document.getElementById("ing-barcode");
+    const ingListDiv = document.getElementById("ing-list");
     const csvFileInput = document.getElementById("csv-file");
     const importCsvBtn = document.getElementById("import-csv-btn");
-    const inventoryItemsDiv = document.getElementById("inventory-items");
+    const menuInventoryDiv = document.getElementById("menu-inventory");
+    const ingredientsInventoryDiv = document.getElementById("ingredients-inventory");
     const notificationsDiv = document.getElementById("notifications");
     const purchaseVendorInput = document.getElementById("purchase-vendor");
+    const purchaseTypeSelect = document.getElementById("purchase-type");
     const purchaseItemSelect = document.getElementById("purchase-item");
     const purchaseQuantityInput = document.getElementById("purchase-quantity");
     const addPurchaseBtn = document.getElementById("add-purchase-btn");
     const purchaseOrdersDiv = document.getElementById("purchase-orders");
     const transferFromInput = document.getElementById("transfer-from");
     const transferToInput = document.getElementById("transfer-to");
+    const transferTypeSelect = document.getElementById("transfer-type");
     const transferItemSelect = document.getElementById("transfer-item");
     const transferQuantityInput = document.getElementById("transfer-quantity");
     const addTransferBtn = document.getElementById("add-transfer-btn");
     const transferOrdersDiv = document.getElementById("transfer-orders");
+    const adjustTypeSelect = document.getElementById("adjust-type");
     const adjustItemSelect = document.getElementById("adjust-item");
     const adjustQuantityInput = document.getElementById("adjust-quantity");
     const adjustReasonInput = document.getElementById("adjust-reason");
     const adjustStockBtn = document.getElementById("adjust-stock-btn");
+    const stocktakeTypeSelect = document.getElementById("stocktake-type");
     const stocktakeItemSelect = document.getElementById("stocktake-item");
     const stocktakeQuantityInput = document.getElementById("stocktake-quantity");
     const stocktakeBtn = document.getElementById("stocktake-btn");
@@ -627,6 +716,7 @@
     const productionQuantityInput = document.getElementById("production-quantity");
     const productionBtn = document.getElementById("production-btn");
     const productionRecordsDiv = document.getElementById("production-records");
+    const labelTypeSelect = document.getElementById("label-type");
     const labelItemSelect = document.getElementById("label-item");
     const printLabelBtn = document.getElementById("print-label-btn");
     const barcodePreviewDiv = document.getElementById("barcode-preview");
@@ -642,6 +732,7 @@
     const tabContents = document.querySelectorAll(".tab-content");
 
     let menuItems = {};
+    let rawIngredients = {};
 
     // Check authentication
     auth.onAuthStateChanged(user => {
@@ -723,7 +814,7 @@
         await set(newItemRef, {
           name, price, category, stock, lowStockThreshold: threshold, cost, barcode, available: true, imageUrl, ingredients: []
         });
-        await logHistory(newItemRef.key, "adjustment", stock, "Initial stock");
+        await logHistory('menu', newItemRef.key, "adjustment", stock, "Initial stock");
         showToast("Menu item added successfully");
         itemNameInput.value = '';
         itemPriceInput.value = '';
@@ -740,6 +831,40 @@
       }
     }
 
+    async function addRawIngredient() {
+      const name = ingNameInput.value.trim();
+      const cost = parseFloat(ingCostInput.value) || 0;
+      const stock = parseFloat(ingStockInput.value) || 0;
+      const threshold = parseFloat(ingThresholdInput.value) || 10;
+      const unit = ingUnitSelect.value;
+      const barcode = ingBarcodeInput.value.trim();
+
+      if (!name || !unit || !barcode) {
+        showAlert("Please fill in all required fields.", true);
+        return;
+      }
+
+      showSpinner();
+      try {
+        const ingRef = ref(db, 'ingredients');
+        const newIngRef = push(ingRef);
+        await set(newIngRef, {
+          name, cost, stock, lowStockThreshold: threshold, unit, barcode
+        });
+        await logHistory('ingredient', newIngRef.key, "adjustment", stock, "Initial stock");
+        showToast("Ingredient added successfully");
+        ingNameInput.value = '';
+        ingCostInput.value = '';
+        ingStockInput.value = '';
+        ingThresholdInput.value = '';
+        ingBarcodeInput.value = '';
+      } catch (error) {
+        showAlert("Failed to add ingredient: " + error.message, true);
+      } finally {
+        hideSpinner();
+      }
+    }
+
     async function addIngredient() {
       const itemId = ingredientItemSelect.value;
       const ingredientId = ingredientSelect.value;
@@ -750,11 +875,6 @@
         return;
       }
 
-      if (itemId === ingredientId) {
-        showAlert("An item cannot be an ingredient of itself.", true);
-        return;
-      }
-
       showSpinner();
       try {
         const itemRef = ref(db, `menu/${itemId}`);
@@ -762,11 +882,11 @@
         const item = snapshot.val();
         const ingredients = item.ingredients || [];
         // Prevent duplicate ingredients
-        if (ingredients.some(ing => ing.itemId === ingredientId)) {
+        if (ingredients.some(ing => ing.ingredientId === ingredientId)) {
           showAlert("This ingredient is already added.", true);
           return;
         }
-        ingredients.push({ itemId: ingredientId, quantity });
+        ingredients.push({ ingredientId: ingredientId, quantity });
         await update(itemRef, { ingredients });
         showToast("Ingredient added successfully");
         ingredientItemSelect.value = '';
@@ -796,7 +916,7 @@
             for (const row of result.data) {
               const { name, price, category, stock, lowStockThreshold, cost, barcode, imageUrl, ingredients } = row;
               if (!name || !price || !category || !barcode) continue;
-              const parsedIngredients = ingredients ? JSON.parse(ingredients) : [];
+              const parsedIngredients = ingredients ? JSON.parse(ingredients).map(ing => ({ingredientId: ing.ingredientId || ing.itemId, quantity: ing.quantity})) : [];
               const newItemRef = push(menuRef);
               await set(newItemRef, {
                 name,
@@ -810,7 +930,7 @@
                 ingredients: parsedIngredients,
                 available: true
               });
-              if (stock) await logHistory(newItemRef.key, "adjustment", parseInt(stock), "CSV import");
+              if (stock) await logHistory('menu', newItemRef.key, "adjustment", parseInt(stock), "CSV import");
             }
             showToast("Items imported successfully");
             csvFileInput.value = '';
@@ -827,10 +947,11 @@
       });
     }
 
-    async function logHistory(itemId, type, quantity, reason) {
+    async function logHistory(itemType, itemId, type, quantity, reason) {
       const historyRef = ref(db, 'inventoryHistory');
       const newHistoryRef = push(historyRef);
       await set(newHistoryRef, {
+        itemType,
         itemId,
         type,
         quantity,
@@ -840,7 +961,7 @@
       });
     }
 
-    async function checkLowStock() {
+    async function checkLowStockMenu() {
       const menuRef = ref(db, 'menu');
       const snapshot = await get(menuRef);
       const items = snapshot.val() || {};
@@ -850,7 +971,26 @@
           const notificationRef = push(notificationsRef);
           await set(notificationRef, {
             itemId: id,
+            type: 'menu',
             message: `Low stock for ${item.name}: ${item.stock} units remaining`,
+            timestamp: Date.now()
+          });
+        }
+      }
+    }
+
+    async function checkLowStockIngredients() {
+      const ingredientsRef = ref(db, 'ingredients');
+      const snapshot = await get(ingredientsRef);
+      const ings = snapshot.val() || {};
+      const notificationsRef = ref(db, 'notifications');
+      for (const [id, ing] of Object.entries(ings)) {
+        if (ing.stock <= ing.lowStockThreshold) {
+          const notificationRef = push(notificationsRef);
+          await set(notificationRef, {
+            itemId: id,
+            type: 'ingredient',
+            message: `Low stock for ingredient ${ing.name}: ${ing.stock} ${ing.unit} remaining`,
             timestamp: Date.now()
           });
         }
@@ -859,10 +999,15 @@
 
     async function createPurchaseOrder() {
       const vendor = purchaseVendorInput.value.trim();
-      const itemId = purchaseItemSelect.value;
+      const selectedValue = purchaseItemSelect.value;
+      if (!selectedValue) {
+        showAlert("Please select an item.", true);
+        return;
+      }
+      const [itemType, itemId] = selectedValue.split('_');
       const quantity = parseInt(purchaseQuantityInput.value);
 
-      if (!vendor || !itemId || !quantity) {
+      if (!vendor || !itemType || !itemId || !quantity) {
         showAlert("Please fill in all fields.", true);
         return;
       }
@@ -872,13 +1017,14 @@
         const purchaseRef = ref(db, 'purchaseOrders');
         const newPurchaseRef = push(purchaseRef);
         await set(newPurchaseRef, {
-          items: [{ itemId, quantity }],
+          items: [{ itemType, itemId, quantity }],
           vendor,
           status: "pending",
           createdAt: Date.now()
         });
         showToast("Purchase order created");
         purchaseVendorInput.value = '';
+        purchaseTypeSelect.value = 'menu';
         purchaseItemSelect.value = '';
         purchaseQuantityInput.value = '';
       } catch (error) {
@@ -891,17 +1037,23 @@
     async function createTransferOrder() {
       const fromStore = transferFromInput.value.trim();
       const toStore = transferToInput.value.trim();
-      const itemId = transferItemSelect.value;
+      const selectedValue = transferItemSelect.value;
+      if (!selectedValue) {
+        showAlert("Please select an item.", true);
+        return;
+      }
+      const [itemType, itemId] = selectedValue.split('_');
       const quantity = parseInt(transferQuantityInput.value);
 
-      if (!fromStore || !toStore || !itemId || !quantity) {
+      if (!fromStore || !toStore || !itemType || !itemId || !quantity) {
         showAlert("Please fill in all fields.", true);
         return;
       }
 
       showSpinner();
       try {
-        const itemRef = ref(db, `menu/${itemId}`);
+        const refPath = itemType === 'menu' ? 'menu' : 'ingredients';
+        const itemRef = ref(db, `${refPath}/${itemId}`);
         const snapshot = await get(itemRef);
         const item = snapshot.val();
         if (item.stock < quantity) {
@@ -911,17 +1063,18 @@
         const transferRef = ref(db, 'transferOrders');
         const newTransferRef = push(transferRef);
         await set(newTransferRef, {
-          items: [{ itemId, quantity }],
+          items: [{ itemType, itemId, quantity }],
           fromStore,
           toStore,
           status: "pending",
           createdAt: Date.now()
         });
         await update(itemRef, { stock: item.stock - quantity });
-        await logHistory(itemId, "transfer", -quantity, `Transferred to ${toStore}`);
+        await logHistory(itemType, itemId, "transfer", -quantity, `Transferred to ${toStore}`);
         showToast("Transfer order created");
         transferFromInput.value = '';
         transferToInput.value = '';
+        transferTypeSelect.value = 'menu';
         transferItemSelect.value = '';
         transferQuantityInput.value = '';
       } catch (error) {
@@ -932,18 +1085,24 @@
     }
 
     async function adjustStock() {
-      const itemId = adjustItemSelect.value;
+      const selectedValue = adjustItemSelect.value;
+      if (!selectedValue) {
+        showAlert("Please select an item.", true);
+        return;
+      }
+      const [itemType, itemId] = selectedValue.split('_');
       const quantity = parseInt(adjustQuantityInput.value);
       const reason = adjustReasonInput.value.trim();
 
-      if (!itemId || !quantity || !reason) {
+      if (!itemType || !itemId || !quantity || !reason) {
         showAlert("Please fill in all fields.", true);
         return;
       }
 
       showSpinner();
       try {
-        const itemRef = ref(db, `menu/${itemId}`);
+        const refPath = itemType === 'menu' ? 'menu' : 'ingredients';
+        const itemRef = ref(db, `${refPath}/${itemId}`);
         const snapshot = await get(itemRef);
         const item = snapshot.val();
         const newStock = item.stock + quantity;
@@ -952,8 +1111,9 @@
           return;
         }
         await update(itemRef, { stock: newStock });
-        await logHistory(itemId, "adjustment", quantity, reason);
+        await logHistory(itemType, itemId, "adjustment", quantity, reason);
         showToast("Stock adjusted successfully");
+        adjustTypeSelect.value = 'menu';
         adjustItemSelect.value = '';
         adjustQuantityInput.value = '';
         adjustReasonInput.value = '';
@@ -965,22 +1125,29 @@
     }
 
     async function recordStocktake() {
-      const itemId = stocktakeItemSelect.value;
-      const quantity = parseInt(stocktakeQuantityInput.value);
+      const selectedValue = stocktakeItemSelect.value;
+      if (!selectedValue) {
+        showAlert("Please select an item.", true);
+        return;
+      }
+      const [itemType, itemId] = selectedValue.split('_');
+      const quantity = parseFloat(stocktakeQuantityInput.value);
 
-      if (!itemId || quantity < 0) {
+      if (!itemType || !itemId || quantity < 0) {
         showAlert("Please fill in all fields with valid values.", true);
         return;
       }
 
       showSpinner();
       try {
-        const itemRef = ref(db, `menu/${itemId}`);
+        const refPath = itemType === 'menu' ? 'menu' : 'ingredients';
+        const itemRef = ref(db, `${refPath}/${itemId}`);
         const snapshot = await get(itemRef);
         const item = snapshot.val();
         await update(itemRef, { stock: quantity });
-        await logHistory(itemId, "stocktake", quantity - item.stock, "Stocktake adjustment");
+        await logHistory(itemType, itemId, "stocktake", quantity - item.stock, "Stocktake adjustment");
         showToast("Stocktake recorded successfully");
+        stocktakeTypeSelect.value = 'menu';
         stocktakeItemSelect.value = '';
         stocktakeQuantityInput.value = '';
       } catch (error) {
@@ -1008,8 +1175,8 @@
           showAlert("Product has no ingredients defined.", true);
           return;
         }
-        for (const { itemId, quantity: ingQuantity } of product.ingredients) {
-          const ingredientRef = ref(db, `menu/${itemId}`);
+        for (const { ingredientId, quantity: ingQuantity } of product.ingredients) {
+          const ingredientRef = ref(db, `ingredients/${ingredientId}`);
           const ingSnapshot = await get(ingredientRef);
           const ingredient = ingSnapshot.val();
           const required = quantity * ingQuantity;
@@ -1018,7 +1185,7 @@
             return;
           }
           await update(ingredientRef, { stock: ingredient.stock - required });
-          await logHistory(itemId, "production", -required, `Used for ${product.name} production`);
+          await logHistory('ingredient', ingredientId, "production", -required, `Used for ${product.name} production`);
         }
         await update(productRef, { stock: product.stock + quantity });
         const productionRef = ref(db, 'production');
@@ -1029,7 +1196,7 @@
           quantityProduced: quantity,
           timestamp: Date.now()
         });
-        await logHistory(productId, "production", quantity, "Produced item");
+        await logHistory('menu', productId, "production", quantity, "Produced item");
         showToast("Production recorded successfully");
         productionProductSelect.value = '';
         productionQuantityInput.value = '';
@@ -1041,21 +1208,24 @@
     }
 
     async function printBarcodeLabel() {
-      const itemId = labelItemSelect.value;
-      if (!itemId) {
+      const selectedValue = labelItemSelect.value;
+      if (!selectedValue) {
         showAlert("Please select an item.", true);
         return;
       }
+      const [itemType, itemId] = selectedValue.split('_');
 
       showSpinner();
       try {
-        const itemRef = ref(db, `menu/${itemId}`);
+        const refPath = itemType === 'menu' ? 'menu' : 'ingredients';
+        const itemRef = ref(db, `${refPath}/${itemId}`);
         const snapshot = await get(itemRef);
         const item = snapshot.val();
+        const isMenu = itemType === 'menu';
         barcodePreviewDiv.innerHTML = `<div id="barcode-${itemId}" style="text-align: center; padding: 10px; background: white;">
-          ${item.imageUrl ? `<img src="${item.imageUrl}" style="width: 50px; height: 50px; object-fit: cover; margin-bottom: 10px;" />` : ''}
+          ${isMenu && item.imageUrl ? `<img src="${item.imageUrl}" style="width: 50px; height: 50px; object-fit: cover; margin-bottom: 10px;" />` : ''}
           <p>${item.name}</p>
-          <p>R${item.price.toFixed(2)}</p>
+          ${isMenu ? `<p>R${item.price.toFixed(2)}</p>` : `<p>${item.stock} ${item.unit}</p>`}
           <p>${item.barcode}</p>
         </div>`;
         const canvas = await html2canvas(document.getElementById(`barcode-${itemId}`));
@@ -1076,15 +1246,36 @@
       }
     }
 
+    function populateSelect(select, type) {
+      select.innerHTML = '<option value="">Select</option>';
+      const data = type === 'menu' ? menuItems : rawIngredients;
+      Object.entries(data).forEach(([id, item]) => {
+        const option = document.createElement('option');
+        option.value = `${type}_${id}`;
+        option.textContent = item.name;
+        select.appendChild(option);
+      });
+    }
+
     function populateItemSelects() {
-      [purchaseItemSelect, transferItemSelect, adjustItemSelect, stocktakeItemSelect, productionProductSelect, labelItemSelect, ingredientItemSelect, ingredientSelect].forEach(select => {
-        select.innerHTML = '<option value="">Select item</option>';
+      // For menu items only
+      [ingredientItemSelect, productionProductSelect].forEach(select => {
+        select.innerHTML = '<option value="">Select</option>';
         Object.entries(menuItems).forEach(([id, item]) => {
           const option = document.createElement('option');
           option.value = id;
           option.textContent = item.name;
           select.appendChild(option);
         });
+      });
+
+      // For ingredients only
+      ingredientSelect.innerHTML = '<option value="">Select ingredient</option>';
+      Object.entries(rawIngredients).forEach(([id, ing]) => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = `${ing.name} (${ing.unit})`;
+        ingredientSelect.appendChild(option);
       });
     }
 
@@ -1093,10 +1284,10 @@
       onValue(menuRef, (snapshot) => {
         menuItems = snapshot.val() || {};
         menuItemsDiv.innerHTML = '';
-        inventoryItemsDiv.innerHTML = '';
+        menuInventoryDiv.innerHTML = '';
         Object.entries(menuItems).forEach(([id, item]) => {
           const ingredientsList = item.ingredients && item.ingredients.length > 0 
-            ? item.ingredients.map(ing => `${menuItems[ing.itemId]?.name || 'Unknown'} (${ing.quantity})`).join(', ')
+            ? item.ingredients.map(ing => `${rawIngredients[ing.ingredientId]?.name || 'Unknown'} (${ing.quantity} ${rawIngredients[ing.ingredientId]?.unit || ''})`).join(', ')
             : 'None';
           const itemDiv = document.createElement('div');
           itemDiv.className = 'item-row';
@@ -1139,7 +1330,7 @@
               </div>
             </div>
           `;
-          inventoryItemsDiv.appendChild(inventoryDiv);
+          menuInventoryDiv.appendChild(inventoryDiv);
         });
 
         document.querySelectorAll('.toggle-btn').forEach(btn => {
@@ -1182,9 +1373,62 @@
         });
 
         populateItemSelects();
-        checkLowStock();
+        checkLowStockMenu();
       }, (error) => {
         showAlert("Failed to load menu items. Check permissions or authentication.", true);
+      });
+    }
+
+    function loadRawIngredients() {
+      const ingRef = ref(db, 'ingredients');
+      onValue(ingRef, (snapshot) => {
+        rawIngredients = snapshot.val() || {};
+        ingListDiv.innerHTML = '';
+        ingredientsInventoryDiv.innerHTML = '';
+        Object.entries(rawIngredients).forEach(([id, ing]) => {
+          const ingDiv = document.createElement('div');
+          ingDiv.className = 'item-row';
+          ingDiv.innerHTML = `
+            <div>
+              <h3 class="font-bold">${ing.name}</h3>
+              <p>Stock: ${ing.stock} ${ing.unit}</p>
+              <p>Low Stock Threshold: ${ing.lowStockThreshold}</p>
+              <p>Cost: R${ing.cost.toFixed(2)}</p>
+              <p>Barcode: ${ing.barcode}</p>
+            </div>
+            <button class="action-btn delete-btn" data-id="${id}" data-type="ingredient" aria-label="Delete ingredient">Delete</button>
+          `;
+          ingListDiv.appendChild(ingDiv);
+
+          const inventoryDiv = document.createElement('div');
+          inventoryDiv.className = 'item-row';
+          inventoryDiv.innerHTML = `
+            <div>
+              <h3 class="font-bold">${ing.name}</h3>
+              <p>Stock: ${ing.stock} ${ing.unit}</p>
+              <p>Low Stock Threshold: ${ing.lowStockThreshold}</p>
+              <p>Cost: R${ing.cost.toFixed(2)}</p>
+            </div>
+          `;
+          ingredientsInventoryDiv.appendChild(inventoryDiv);
+        });
+
+        document.querySelectorAll('.delete-btn[data-type="ingredient"]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            try {
+              await remove(ref(db, `ingredients/${id}`));
+              showToast("Ingredient deleted successfully");
+            } catch (error) {
+              showAlert("Failed to delete ingredient: " + error.message, true);
+            }
+          });
+        });
+
+        populateItemSelects();
+        checkLowStockIngredients();
+      }, (error) => {
+        showAlert("Failed to load ingredients. Check permissions or authentication.", true);
       });
     }
 
@@ -1228,7 +1472,10 @@
         Object.entries(orders).forEach(([id, order]) => {
           const orderDiv = document.createElement('div');
           orderDiv.className = 'order-row';
-          const itemNames = order.items.map(item => menuItems[item.itemId]?.name || 'Unknown').join(', ');
+          const itemNames = order.items.map(item => {
+            const data = item.itemType === 'menu' ? menuItems : rawIngredients;
+            return data[item.itemId]?.name || 'Unknown';
+          }).join(', ');
           orderDiv.innerHTML = `
             <div>
               <p>Vendor: ${order.vendor}</p>
@@ -1251,12 +1498,13 @@
             const snapshot = await get(orderRef);
             const order = snapshot.val();
             try {
-              for (const { itemId, quantity } of order.items) {
-                const itemRef = ref(db, `menu/${itemId}`);
+              for (const { itemType, itemId, quantity } of order.items) {
+                const refPath = itemType === 'menu' ? 'menu' : 'ingredients';
+                const itemRef = ref(db, `${refPath}/${itemId}`);
                 const itemSnapshot = await get(itemRef);
                 const item = itemSnapshot.val();
                 await update(itemRef, { stock: item.stock + quantity });
-                await logHistory(itemId, "purchase", quantity, `Received from ${order.vendor}`);
+                await logHistory(itemType, itemId, "purchase", quantity, `Received from ${order.vendor}`);
               }
               await update(orderRef, { status: "completed" });
               showToast("Purchase order completed");
@@ -1272,7 +1520,10 @@
             const orderRef = ref(db, `purchaseOrders/${id}`);
             const snapshot = await get(orderRef);
             const order = snapshot.val();
-            const csv = order.items.map(item => `${menuItems[item.itemId]?.name || 'Unknown'},${item.quantity},R${menuItems[item.itemId]?.cost.toFixed(2) || '0.00'}`).join('\n');
+            const csv = order.items.map(item => {
+              const data = item.itemType === 'menu' ? menuItems : rawIngredients;
+              return `${data[item.itemId]?.name || 'Unknown'},${item.quantity},R${data[item.itemId]?.cost.toFixed(2) || '0.00'}`;
+            }).join('\n');
             const blob = new Blob([`Item,Quantity,Cost\n${csv}`], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1294,7 +1545,10 @@
         Object.entries(orders).forEach(([id, order]) => {
           const orderDiv = document.createElement('div');
           orderDiv.className = 'order-row';
-          const itemNames = order.items.map(item => menuItems[item.itemId]?.name || 'Unknown').join(', ');
+          const itemNames = order.items.map(item => {
+            const data = item.itemType === 'menu' ? menuItems : rawIngredients;
+            return data[item.itemId]?.name || 'Unknown';
+          }).join(', ');
           orderDiv.innerHTML = `
             <div>
               <p>From: ${order.fromStore}</p>
@@ -1315,8 +1569,8 @@
             const snapshot = await get(orderRef);
             const order = snapshot.val();
             try {
-              for (const { itemId, quantity } of order.items) {
-                await logHistory(itemId, "transfer", quantity, `Received at ${order.toStore}`);
+              for (const { itemType, itemId, quantity } of order.items) {
+                await logHistory(itemType, itemId, "transfer", quantity, `Received at ${order.toStore}`);
               }
               await update(orderRef, { status: "completed" });
               showToast("Transfer order completed");
@@ -1336,7 +1590,7 @@
         Object.entries(records).forEach(([id, record]) => {
           const recordDiv = document.createElement('div');
           recordDiv.className = 'item-row';
-          const ingredientNames = record.ingredients.map(ing => `${menuItems[ing.itemId]?.name || 'Unknown'} (${ing.quantity})`).join(', ');
+          const ingredientNames = record.ingredients.map(ing => `${rawIngredients[ing.ingredientId]?.name || 'Unknown'} (${ing.quantity} ${rawIngredients[ing.ingredientId]?.unit || ''})`).join(', ');
           recordDiv.innerHTML = `
             <div>
               <p>Product: ${menuItems[record.productId]?.name || 'Unknown'}</p>
@@ -1356,11 +1610,13 @@
         const history = snapshot.val() || {};
         inventoryHistoryDiv.innerHTML = '';
         Object.entries(history).forEach(([id, entry]) => {
+          const data = entry.itemType === 'menu' ? menuItems : rawIngredients;
+          const name = data[entry.itemId]?.name || 'Unknown';
           const historyDiv = document.createElement('div');
           historyDiv.className = 'history-row';
           historyDiv.innerHTML = `
             <div>
-              <p>Item: ${menuItems[entry.itemId]?.name || 'Unknown'}</p>
+              <p>${entry.itemType.toUpperCase()}: ${name}</p>
               <p>Type: ${entry.type}</p>
               <p>Quantity: ${entry.quantity}</p>
               <p>Reason: ${entry.reason}</p>
@@ -1373,7 +1629,10 @@
     }
 
     function loadValuationReport() {
-      valuationReportDiv.innerHTML = `
+      valuationReportDiv.innerHTML = '';
+      // Menu Items Table
+      let menuTable = `
+        <h2>Menu Items Valuation</h2>
         <table class="w-full border-collapse">
           <thead>
             <tr class="bg-gray-100">
@@ -1385,47 +1644,83 @@
               <th class="p-2 border">Potential Profit (R)</th>
             </tr>
           </thead>
-          <tbody id="valuation-table"></tbody>
-        </table>
+          <tbody>
       `;
-      const tbody = document.getElementById('valuation-table');
-      let totalCost = 0, totalProfit = 0;
+      let totalMenuCost = 0, totalProfit = 0;
       Object.entries(menuItems).forEach(([id, item]) => {
         const itemCost = item.stock * item.cost;
         const itemProfit = item.stock * (item.price - item.cost);
-        totalCost += itemCost;
+        totalMenuCost += itemCost;
         totalProfit += itemProfit;
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="p-2 border">${item.name}</td>
-          <td class="p-2 border">${item.stock}</td>
-          <td class="p-2 border">R${item.cost.toFixed(2)}</td>
-          <td class="p-2 border">R${itemCost.toFixed(2)}</td>
-          <td class="p-2 border">R${item.price.toFixed(2)}</td>
-          <td class="p-2 border">R${itemProfit.toFixed(2)}</td>
+        menuTable += `
+          <tr>
+            <td class="p-2 border">${item.name}</td>
+            <td class="p-2 border">${item.stock}</td>
+            <td class="p-2 border">R${item.cost.toFixed(2)}</td>
+            <td class="p-2 border">R${itemCost.toFixed(2)}</td>
+            <td class="p-2 border">R${item.price.toFixed(2)}</td>
+            <td class="p-2 border">R${itemProfit.toFixed(2)}</td>
+          </tr>
         `;
-        tbody.appendChild(row);
       });
+      menuTable += '</tbody></table>';
+      valuationReportDiv.innerHTML += menuTable;
+
+      // Raw Ingredients Table
+      let ingTable = `
+        <h2 class="mt-6">Raw Ingredients Valuation</h2>
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="p-2 border">Ingredient</th>
+              <th class="p-2 border">Stock</th>
+              <th class="p-2 border">Cost (R)</th>
+              <th class="p-2 border">Total Cost (R)</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      let totalIngCost = 0;
+      Object.entries(rawIngredients).forEach(([id, ing]) => {
+        const ingCost = ing.stock * ing.cost;
+        totalIngCost += ingCost;
+        ingTable += `
+          <tr>
+            <td class="p-2 border">${ing.name}</td>
+            <td class="p-2 border">${ing.stock} ${ing.unit}</td>
+            <td class="p-2 border">R${ing.cost.toFixed(2)}</td>
+            <td class="p-2 border">R${ingCost.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+      ingTable += '</tbody></table>';
+      valuationReportDiv.innerHTML += ingTable;
+
       const summary = document.createElement('div');
       summary.className = 'mt-4';
       summary.innerHTML = `
-        <p><strong>Total Inventory Cost:</strong> R${totalCost.toFixed(2)}</p>
+        <p><strong>Total Inventory Cost:</strong> R${(totalMenuCost + totalIngCost).toFixed(2)}</p>
         <p><strong>Total Potential Profit:</strong> R${totalProfit.toFixed(2)}</p>
       `;
       valuationReportDiv.appendChild(summary);
     }
 
     function exportValuationReport() {
-      const csv = ['Item,Stock,Cost,Total Cost,Price,Potential Profit'];
-      let totalCost = 0, totalProfit = 0;
+      const csv = ['Type,Item,Stock,Unit,Cost,Total Cost,Price,Potential Profit'];
+      let totalMenuCost = 0, totalIngCost = 0, totalProfit = 0;
       Object.entries(menuItems).forEach(([id, item]) => {
         const itemCost = item.stock * item.cost;
         const itemProfit = item.stock * (item.price - item.cost);
-        totalCost += itemCost;
+        totalMenuCost += itemCost;
         totalProfit += itemProfit;
-        csv.push(`${item.name},${item.stock},${item.cost.toFixed(2)},${itemCost.toFixed(2)},${item.price.toFixed(2)},${itemProfit.toFixed(2)}`);
+        csv.push(`Menu,${item.name},${item.stock},unit,${item.cost.toFixed(2)},${itemCost.toFixed(2)},${item.price.toFixed(2)},${itemProfit.toFixed(2)}`);
       });
-      csv.push(`Total,,${totalCost.toFixed(2)},,,${totalProfit.toFixed(2)}`);
+      Object.entries(rawIngredients).forEach(([id, ing]) => {
+        const ingCost = ing.stock * ing.cost;
+        totalIngCost += ingCost;
+        csv.push(`Ingredient,${ing.name},${ing.stock},${ing.unit},${ing.cost.toFixed(2)},${ingCost.toFixed(2)},,`);
+      });
+      csv.push(`Total Inventory Cost,,${(totalMenuCost + totalIngCost).toFixed(2)},,,,${totalProfit.toFixed(2)}`);
       const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1434,6 +1729,21 @@
       a.click();
       URL.revokeObjectURL(url);
       showToast("Valuation report exported");
+    }
+
+    function setupTypeListeners() {
+      [purchaseTypeSelect, transferTypeSelect, adjustTypeSelect, stocktakeTypeSelect, labelTypeSelect].forEach(typeSelect => {
+        if (typeSelect) {
+          let itemSelect;
+          if (typeSelect.id === 'purchase-type') itemSelect = purchaseItemSelect;
+          else if (typeSelect.id === 'transfer-type') itemSelect = transferItemSelect;
+          else if (typeSelect.id === 'adjust-type') itemSelect = adjustItemSelect;
+          else if (typeSelect.id === 'stocktake-type') itemSelect = stocktakeItemSelect;
+          else if (typeSelect.id === 'label-type') itemSelect = labelItemSelect;
+          typeSelect.addEventListener('change', () => populateSelect(itemSelect, typeSelect.value));
+          populateSelect(itemSelect, typeSelect.value);
+        }
+      });
     }
 
     function setupTabListeners() {
@@ -1463,6 +1773,18 @@
         itemCostInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
         itemBarcodeInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addMenuItem(); });
         itemImageInput.addEventListener("change", () => { if (itemImageInput.files[0]) showToast("Image selected"); });
+      }
+      if (addIngBtn) {
+        addIngBtn.addEventListener("click", () => {
+          addRawIngredient();
+          addIngBtn.classList.add("tap-active");
+          setTimeout(() => addIngBtn.classList.remove("tap-active"), 100);
+        });
+        ingNameInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addRawIngredient(); });
+        ingCostInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addRawIngredient(); });
+        ingStockInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addRawIngredient(); });
+        ingThresholdInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addRawIngredient(); });
+        ingBarcodeInput.addEventListener("keypress", (e) => { if (e.key === "Enter") addRawIngredient(); });
       }
       if (addIngredientBtn) {
         addIngredientBtn.addEventListener("click", () => {
@@ -1548,7 +1870,9 @@
       applyTheme();
       setupTabListeners();
       setupListeners();
+      setupTypeListeners();
       loadMenuItems();
+      loadRawIngredients();
       loadNotifications();
       loadPurchaseOrders();
       loadTransferOrders();
