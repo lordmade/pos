@@ -11,31 +11,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-    --bg-light: #F7F7F8;
-    --card-bg-light: #FFFFFF; /* Changed to white for light theme */
-    --text-primary-light: #1C2526; /* Adjusted for contrast on white background */
-    --text-secondary-light: #4B5EAA;
-    --border-light: #4A5568;
-    --highlight-light: #38B2AC;
-    --user-msg-bg-light: #E0E7FF;
-    --ai-msg-bg-light: #F1F5F9; /* Slightly off-white for AI messages to maintain contrast */
-    --bg-dark: #1A202C;
-    --card-bg-dark: #2D3748;
-    --text-primary-dark: #E2E8F0;
-    --text-secondary-dark: #A0AEC0;
-    --border-dark: #4A5568;
-    --highlight-dark: #4FD1C5;
-    --user-msg-bg-dark: #4C51BF;
-    --ai-msg-bg-dark: #2D3748;
-  }
-
-    #sidebar {
-    background: var(--card-bg); /* Uses --card-bg-light in light theme */
-  }
-
-  .chat-input-container {
-    background: var(--card-bg); /* Uses --card-bg-light in light theme */
-  }
+      --bg-light: #F7F7F8;
+      --card-bg-light: #FFFFFF;
+      --text-primary-light: #1C2526;
+      --text-secondary-light: #4B5EAA;
+      --border-light: #4A5568;
+      --highlight-light: #38B2AC;
+      --user-msg-bg-light: #E0E7FF;
+      --ai-msg-bg-light: #F1F5F9;
+      --bg-dark: #1A202C;
+      --card-bg-dark: #2D3748;
+      --text-primary-dark: #E2E8F0;
+      --text-secondary-dark: #A0AEC0;
+      --border-dark: #4A5568;
+      --highlight-dark: #4FD1C5;
+      --user-msg-bg-dark: #4C51BF;
+      --ai-msg-bg-dark: #2D3748;
+    }
 
     body {
       font-family: 'Inter', system-ui, sans-serif;
@@ -171,7 +163,7 @@
     }
 
     #send-button:hover, #image-upload-button:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.1);
     }
 
     #send-button svg, #image-upload-button svg {
@@ -207,7 +199,7 @@
     }
 
     .message.ai {
-      background: linear-gradient(135deg, var(--ai-msg-bg), #2D3748);
+      background: linear-gradient(135deg, var(--ai-msg-bg), #F1F5F9);
       color: var(--text-primary);
       margin-right: auto;
       border-bottom-left-radius: 0.25rem;
@@ -219,14 +211,14 @@
     }
 
     .message.ai code {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.1);
       padding: 0.2rem 0.4rem;
       border-radius: 0.25rem;
       font-family: 'Courier New', Courier, monospace;
     }
 
     .message.ai pre {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.1);
       padding: 1rem;
       border-radius: 0.5rem;
       overflow-x: auto;
@@ -332,8 +324,9 @@
 
     #sidebar {
       transform: translateX(-100%);
-      transition: transform 0.3s ease, width 0.3s ease;
+      transition: transform 0.3s ease;
       width: 70%;
+      background: var(--card-bg);
     }
 
     #sidebar.open {
@@ -428,7 +421,7 @@
       width: 100%;
       padding: 0.75rem;
       margin-bottom: 1rem;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.1);
       border: 1px solid var(--border);
       border-radius: 0.5rem;
       color: var(--text-primary);
@@ -492,6 +485,7 @@
       font-size: 1.25rem;
       font-weight: 600;
       text-transform: uppercase;
+      cursor: pointer;
     }
 
     #header-avatar {
@@ -621,7 +615,7 @@
 
     @media (min-width: 1024px) {
       .tab-container {
-        display: none;
+        display: flex;
       }
 
       #hamburger-button {
@@ -629,7 +623,7 @@
       }
 
       #header-avatar {
-        display: none;
+        display: flex;
       }
 
       #sidebar {
@@ -881,6 +875,7 @@
       chatInput: document.getElementById('chat-input'),
       chatInputContainer: document.getElementById('chat-input-container'),
       sendButton: document.getElementById('send-button'),
+      imageUploadButton: document.getElementById('image-upload-button'),
       welcomeContainer: document.getElementById('welcome-container'),
       hamburgerButton: document.getElementById('hamburger-button'),
       sidebar: document.getElementById('sidebar'),
@@ -917,15 +912,19 @@
     let app, auth, provider;
 
     function showCustomAlert(message, duration = 3000) {
-      elements.customAlert.textContent = message;
-      elements.customAlert.style.display = 'block';
-      setTimeout(() => {
-        elements.customAlert.style.display = 'none';
-      }, duration);
+      if (elements.customAlert) {
+        elements.customAlert.textContent = message;
+        elements.customAlert.style.display = 'block';
+        setTimeout(() => {
+          elements.customAlert.style.display = 'none';
+        }, duration);
+      }
     }
 
     function showOverlay(show = true) {
-      elements.overlay.style.display = show ? 'flex' : 'none';
+      if (elements.overlay) {
+        elements.overlay.style.display = show ? 'flex' : 'none';
+      }
     }
 
     function initializeFirebase() {
@@ -937,7 +936,7 @@
           elements.authPanel.classList.remove('open');
           elements.chatInput.disabled = false;
           elements.sendButton.disabled = false;
-          elements.imageUploadButton.disabled = false;
+          if (elements.imageUploadButton) elements.imageUploadButton.disabled = false;
           elements.welcomeContainer.querySelector('h1').textContent = `Hey there, ${user.displayName || 'friend'}!`;
           elements.headerAvatar.textContent = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
           elements.headerAvatar.classList.remove('hidden');
@@ -945,7 +944,7 @@
           elements.authPanel.classList.add('open');
           elements.chatInput.disabled = true;
           elements.sendButton.disabled = true;
-          elements.imageUploadButton.disabled = true;
+          if (elements.imageUploadButton) elements.imageUploadButton.disabled = true;
           elements.welcomeContainer.classList.add('hidden');
           elements.sidebar.classList.remove('open');
           elements.headerAvatar.classList.remove('hidden');
@@ -956,16 +955,20 @@
 
     function updateSettingsModal() {
       const savedTheme = localStorage.getItem('theme') || 'light';
-      elements.themeToggle.checked = savedTheme === 'dark';
+      if (elements.themeToggle) {
+        elements.themeToggle.checked = savedTheme === 'dark';
+      }
     }
 
     function saveSettings() {
-      const isDarkMode = elements.themeToggle.checked;
-      document.body.classList.remove('light', 'dark');
-      document.body.classList.add(isDarkMode ? 'dark' : 'light');
-      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-      showCustomAlert('Settings saved!');
-      closeModal('settings-modal');
+      if (elements.themeToggle) {
+        const isDarkMode = elements.themeToggle.checked;
+        document.body.classList.remove('light', 'dark');
+        document.body.classList.add(isDarkMode ? 'dark' : 'light');
+        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        showCustomAlert('Settings saved!');
+        closeModal('settings-modal');
+      }
     }
 
     function openSettingsModal() {
@@ -1090,204 +1093,256 @@
     }
 
     function handleMessageActions() {
-      elements.chatMessages.addEventListener('click', (e) => {
-        if (e.target.closest('.delete-btn')) {
-          const messageDiv = e.target.closest('.message');
-          const messageId = messageDiv.dataset.messageId;
-          messageDiv.remove();
-          state.messages = state.messages.filter(msg => msg.messageId !== messageId);
-        }
-        if (e.target.closest('.edit-btn')) {
-          const messageDiv = e.target.closest('.message');
-          const messageId = messageDiv.dataset.messageId;
-          const message = state.messages.find(msg => msg.messageId === messageId);
-          const newContent = prompt('Edit your message:', message.content);
-          if (newContent && newContent.trim()) {
-            messageDiv.textContent = newContent;
-            message.content = newContent;
+      if (elements.chatMessages) {
+        elements.chatMessages.addEventListener('click', (e) => {
+          if (e.target.closest('.delete-btn')) {
+            const messageDiv = e.target.closest('.message');
+            const messageId = messageDiv.dataset.messageId;
+            messageDiv.remove();
+            state.messages = state.messages.filter(msg => msg.messageId !== messageId);
           }
-        }
-      });
+          if (e.target.closest('.edit-btn')) {
+            const messageDiv = e.target.closest('.message');
+            const messageId = messageDiv.dataset.messageId;
+            const message = state.messages.find(msg => msg.messageId === messageId);
+            const newContent = prompt('Edit your message:', message.content);
+            if (newContent && newContent.trim()) {
+              messageDiv.textContent = newContent;
+              message.content = newContent;
+            }
+          }
+        });
+      }
     }
 
     function openModal(modalId) {
-      document.getElementById(modalId).style.display = 'block';
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.style.display = 'block';
+      }
     }
 
     function closeModal(modalId) {
-      document.getElementById(modalId).style.display = 'none';
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.style.display = 'none';
+      }
     }
 
-    elements.settingsTab.addEventListener('click', openSettingsModal);
-    elements.settingsTabMobile.addEventListener('click', openSettingsModal);
-    elements.profileTab.addEventListener('click', openProfileModal);
-    elements.profileTabMobile.addEventListener('click', openProfileModal);
+    function setupEventListeners() {
+      if (elements.settingsTab) {
+        elements.settingsTab.addEventListener('click', openSettingsModal);
+      }
+      if (elements.settingsTabMobile) {
+        elements.settingsTabMobile.addEventListener('click', openSettingsModal);
+      }
+      if (elements.profileTab) {
+        elements.profileTab.addEventListener('click', openProfileModal);
+      }
+      if (elements.profileTabMobile) {
+        elements.profileTabMobile.addEventListener('click', openProfileModal);
+      }
+      if (elements.headerAvatar) {
+        elements.headerAvatar.addEventListener('click', openProfileModal);
+      }
 
-    document.querySelectorAll('.close-modal').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const modal = btn.closest('.modal');
-        modal.style.display = 'none';
+      document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const modal = btn.closest('.modal');
+          if (modal) {
+            modal.style.display = 'none';
+          }
+        });
       });
-    });
 
-    window.addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal')) {
-        e.target.style.display = 'none';
-      }
-    });
-
-    elements.signoutButton.addEventListener('click', async () => {
-      try {
-        await auth.signOut();
-        closeModal('profile-modal');
-        showCustomAlert('Signed out successfully!');
-      } catch (error) {
-        showCustomAlert('Sign out failed: ' + error.message);
-        console.error('Sign Out Error:', error);
-      }
-    });
-
-    elements.saveSettingsButton.addEventListener('click', saveSettings);
-
-    elements.authTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        elements.authTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        elements.loginContent.classList.remove('active');
-        elements.signupContent.classList.remove('active');
-        document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
-        updateAvatar();
-      });
-    });
-
-    elements.loginEmail.addEventListener('input', updateAvatar);
-    elements.signupName.addEventListener('input', updateAvatar);
-    elements.signupEmail.addEventListener('input', updateAvatar);
-
-    elements.loginButton.addEventListener('click', async () => {
-      const email = elements.loginEmail.value.trim();
-      const password = elements.loginPassword.value.trim();
-      if (!email || !password) {
-        showCustomAlert('Please enter both email and password.');
-        return;
-      }
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (error) {
-        showCustomAlert('Login failed: ' + error.message);
-        console.error('Login Error:', error);
-      }
-    });
-
-    elements.signupButton.addEventListener('click', async () => {
-      const name = elements.signupName.value.trim();
-      const email = elements.signupEmail.value.trim();
-      const password = elements.signupPassword.value.trim();
-      if (!name || !email || !password) {
-        showCustomAlert('Please fill in all fields.');
-        return;
-      }
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await userCredential.user.updateProfile({ displayName: name });
-      } catch (error) {
-        showCustomAlert('Signup failed: ' + error.message);
-        console.error('Signup Error:', error);
-      }
-    });
-
-    elements.googleLogin.addEventListener('click', async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        showCustomAlert('Google login failed: ' + error.message);
-        console.error('Google Login Error:', error);
-      }
-    });
-
-    elements.googleSignup.addEventListener('click', async () => {
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        showCustomAlert('Google signup failed: ' + error.message);
-        console.error('Google Signup Error:', error);
-      }
-    });
-
-    elements.sendButton.addEventListener('click', async () => {
-      const prompt = sanitizeInput(elements.chatInput.value.trim());
-      if (!prompt) return;
-      elements.chatInput.value = '';
-      appendMessage(prompt, 'user');
-      await getAIResponse(prompt);
-    });
-
-    elements.chatInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        elements.sendButton.click();
-      }
-    });
-
-    elements.chatInput.addEventListener('input', () => {
-      elements.chatInputContainer.classList.add('typing');
-      clearTimeout(elements.chatInput.dataset.typingTimeout);
-      elements.chatInput.dataset.typingTimeout = setTimeout(() => {
-        elements.chatInputContainer.classList.remove('typing');
-      }, 1000);
-    });
-
-    elements.hamburgerButton.addEventListener('click', () => {
-      elements.sidebar.classList.add('open');
-    });
-
-    elements.closeSidebar.addEventListener('click', () => {
-      elements.sidebar.classList.remove('open');
-    });
-
-    document.addEventListener('click', (e) => {
-      if (elements.sidebar.classList.contains('open') && !elements.sidebar.contains(e.target) && !elements.hamburgerButton.contains(e.target)) {
-        elements.sidebar.classList.remove('open');
-      }
-    });
-
-    elements.imageUploadButton.addEventListener('click', () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = 'image/*';
-      input.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', 'banter_box');
-        const tempMsg = appendMessage('', 'user', true);
-        try {
-          const uploadResponse = await fetch('https://api.cloudinary.com/v1_1/dqkujefxj/image/upload', {
-            method: 'POST',
-            body: formData
-          });
-          const uploadData = await uploadResponse.json();
-          const imageUrl = uploadData.secure_url;
-          tempMsg.innerHTML = '';
-          tempMsg.classList.remove('processing');
-          appendMessage(imageUrl, 'user', false, true);
-          await getAIResponse('Describe this image', imageUrl);
-        } catch (error) {
-          tempMsg.textContent = 'Oops, couldn’t upload the image!';
-          tempMsg.classList.remove('processing');
-          state.messages.push({ text: tempMsg.textContent, sender: 'user', timestamp: Date.now(), messageId: tempMsg.dataset.messageId });
-          console.error('Upload Error:', error);
+      window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+          e.target.style.display = 'none';
         }
-      };
-      input.click();
-    });
+      });
 
-    window.addEventListener('online', () => elements.offlineWarning.classList.add('hidden'));
-    window.addEventListener('offline', () => elements.offlineWarning.classList.remove('hidden'));
+      if (elements.signoutButton) {
+        elements.signoutButton.addEventListener('click', async () => {
+          try {
+            await auth.signOut();
+            closeModal('profile-modal');
+            showCustomAlert('Signed out successfully!');
+          } catch (error) {
+            showCustomAlert('Sign out failed: ' + error.message);
+            console.error('Sign Out Error:', error);
+          }
+        });
+      }
+
+      if (elements.saveSettingsButton) {
+        elements.saveSettingsButton.addEventListener('click', saveSettings);
+      }
+
+      if (elements.authTabs) {
+        elements.authTabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            elements.authTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            elements.loginContent.classList.remove('active');
+            elements.signupContent.classList.remove('active');
+            document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
+            updateAvatar();
+          });
+        });
+      }
+
+      if (elements.loginEmail) elements.loginEmail.addEventListener('input', updateAvatar);
+      if (elements.signupName) elements.signupName.addEventListener('input', updateAvatar);
+      if (elements.signupEmail) elements.signupEmail.addEventListener('input', updateAvatar);
+
+      if (elements.loginButton) {
+        elements.loginButton.addEventListener('click', async () => {
+          const email = elements.loginEmail.value.trim();
+          const password = elements.loginPassword.value.trim();
+          if (!email || !password) {
+            showCustomAlert('Please enter both email and password.');
+            return;
+          }
+          try {
+            await signInWithEmailAndPassword(auth, email, password);
+          } catch (error) {
+            showCustomAlert('Login failed: ' + error.message);
+            console.error('Login Error:', error);
+          }
+        });
+      }
+
+      if (elements.signupButton) {
+        elements.signupButton.addEventListener('click', async () => {
+          const name = elements.signupName.value.trim();
+          const email = elements.signupEmail.value.trim();
+          const password = elements.signupPassword.value.trim();
+          if (!name || !email || !password) {
+            showCustomAlert('Please fill in all fields.');
+            return;
+          }
+          try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            await userCredential.user.updateProfile({ displayName: name });
+          } catch (error) {
+            showCustomAlert('Signup failed: ' + error.message);
+            console.error('Signup Error:', error);
+          }
+        });
+      }
+
+      if (elements.googleLogin) {
+        elements.googleLogin.addEventListener('click', async () => {
+          try {
+            await signInWithPopup(auth, provider);
+          } catch (error) {
+            showCustomAlert('Google login failed: ' + error.message);
+            console.error('Google Login Error:', error);
+          }
+        });
+      }
+
+      if (elements.googleSignup) {
+        elements.googleSignup.addEventListener('click', async () => {
+          try {
+            await signInWithPopup(auth, provider);
+          } catch (error) {
+            showCustomAlert('Google signup failed: ' + error.message);
+            console.error('Google Signup Error:', error);
+          }
+        });
+      }
+
+      if (elements.sendButton) {
+        elements.sendButton.addEventListener('click', async () => {
+          const prompt = sanitizeInput(elements.chatInput.value.trim());
+          if (!prompt) return;
+          elements.chatInput.value = '';
+          appendMessage(prompt, 'user');
+          await getAIResponse(prompt);
+        });
+      }
+
+      if (elements.chatInput) {
+        elements.chatInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            elements.sendButton.click();
+          }
+        });
+
+        elements.chatInput.addEventListener('input', () => {
+          elements.chatInputContainer.classList.add('typing');
+          clearTimeout(elements.chatInput.dataset.typingTimeout);
+          elements.chatInput.dataset.typingTimeout = setTimeout(() => {
+            elements.chatInputContainer.classList.remove('typing');
+          }, 1000);
+        });
+      }
+
+      if (elements.hamburgerButton) {
+        elements.hamburgerButton.addEventListener('click', () => {
+          elements.sidebar.classList.add('open');
+        });
+      }
+
+      if (elements.closeSidebar) {
+        elements.closeSidebar.addEventListener('click', () => {
+          elements.sidebar.classList.remove('open');
+        });
+      }
+
+      document.addEventListener('click', (e) => {
+        if (elements.sidebar.classList.contains('open') && !elements.sidebar.contains(e.target) && !elements.hamburgerButton.contains(e.target)) {
+          elements.sidebar.classList.remove('open');
+        }
+      });
+
+      if (elements.imageUploadButton) {
+        elements.imageUploadButton.addEventListener('click', () => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'banter_box');
+            const tempMsg = appendMessage('', 'user', true);
+            try {
+              const uploadResponse = await fetch('https://api.cloudinary.com/v1_1/dqkujefxj/image/upload', {
+                method: 'POST',
+                body: formData
+              });
+              const uploadData = await uploadResponse.json();
+              const imageUrl = uploadData.secure_url;
+              tempMsg.innerHTML = '';
+              tempMsg.classList.remove('processing');
+              appendMessage(imageUrl, 'user', false, true);
+              await getAIResponse('Describe this image', imageUrl);
+            } catch (error) {
+              tempMsg.textContent = 'Oops, couldn’t upload the image!';
+              tempMsg.classList.remove('processing');
+              state.messages.push({ text: tempMsg.textContent, sender: 'user', timestamp: Date.now(), messageId: tempMsg.dataset.messageId });
+              console.error('Upload Error:', error);
+            }
+          };
+          input.click();
+        });
+      }
+
+      window.addEventListener('online', () => {
+        if (elements.offlineWarning) elements.offlineWarning.classList.add('hidden');
+      });
+      window.addEventListener('offline', () => {
+        if (elements.offlineWarning) elements.offlineWarning.classList.remove('hidden');
+      });
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       initializeFirebase();
       handleMessageActions();
+      setupEventListeners();
       const savedTheme = localStorage.getItem('theme') || 'light';
       document.body.classList.add(savedTheme);
     });
