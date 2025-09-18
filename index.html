@@ -897,13 +897,18 @@
       </div>
     </div>
     <!-- Profile Modal -->
-    <div id="profile-modal" class="modal">
-      <div class="modal-content">
-        <button class="close-modal">&times;</button>
-        <h2>Profile</h2>
-        <p>Your profile information goes here.</p>
-      </div>
+   <div id="profile-modal" class="modal">
+  <div class="modal-content">
+    <button class="close-modal">&times;</button>
+    <h2>Profile</h2>
+    <div id="profile-content" class="text-center">
+      <div id="profile-avatar" class="avatar mx-auto mb-4"></div>
+      <p id="profile-name" class="text-lg font-semibold text-[var(--text-primary)]"></p>
+      <p id="profile-email" class="text-sm text-[var(--text-secondary)]"></p>
+      <button id="signout-button" class="mt-4 px-4 py-2 bg-[var(--highlight)] text-[var(--text-primary)] rounded-full hover:bg-[#2C928D]">Sign Out</button>
     </div>
+  </div>
+</div>
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal">
       <div class="modal-content">
@@ -974,7 +979,8 @@
       settingsTab: document.getElementById('settings-tab'),
       profileTabMobile: document.getElementById('profile-tab-mobile'),
       settingsTabMobile: document.getElementById('settings-tab-mobile'),
-      overlay: document.getElementById('overlay')
+      overlay: document.getElementById('overlay'),
+      signoutButton: document.getElementById('signout-button')
     };
 
     let app, auth, db, provider;
@@ -1018,6 +1024,40 @@
         }
       });
     }
+
+
+function updateProfileModal(user) {
+  const profileAvatar = document.getElementById('profile-avatar');
+  const profileName = document.getElementById('profile-name');
+  const profileEmail = document.getElementById('profile-email');
+  const signoutButton = document.getElementById('signout-button');
+
+  if (user) {
+    // Set avatar (use photoURL if available, else fallback to initials)
+    if (user.photoURL) {
+      profileAvatar.innerHTML = `<img src="${user.photoURL}" alt="Profile Picture" class="w-10 h-10 rounded-full">`;
+    } else {
+      const initials = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+      profileAvatar.textContent = initials;
+    }
+    // Set name and email
+    profileName.textContent = user.displayName || 'No Name Provided';
+    profileEmail.textContent = user.email || 'No Email Provided';
+    signoutButton.style.display = 'block';
+  } else {
+    profileName.textContent = 'Not Signed In';
+    profileEmail.textContent = 'Please sign in to view your profile.';
+    signoutButton.style.display = 'none';
+  }
+}
+
+// Update profile modal when opening
+function openProfileModal() {
+  const user = auth.currentUser;
+  updateProfileModal(user);
+  openModal('profile-modal');
+}
+    
 
     function updateAvatar() {
       const email = elements.loginEmail.value || elements.signupEmail.value || '';
@@ -1211,8 +1251,8 @@
 
     elements.profileTab.addEventListener('click', () => openModal('profile-modal'));
     elements.settingsTab.addEventListener('click', () => openModal('settings-modal'));
-    elements.profileTabMobile.addEventListener('click', () => openModal('profile-modal'));
-    elements.settingsTabMobile.addEventListener('click', () => openModal('settings-modal'));
+    elements.profileTab.addEventListener('click', openProfileModal);
+    elements.profileTabMobile.addEventListener('click', openProfileModal);
 
     document.querySelectorAll('.close-modal').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1227,6 +1267,19 @@
       }
     });
 
+elements.signoutButton.addEventListener('click', async () => {
+  try {
+    await auth.signOut();
+    closeModal('profile-modal');
+    showCustomAlert('Signed out successfully!');
+  } catch (error) {
+    showCustomAlert('Sign out failed: ' + error.message);
+    console.error('Sign Out Error:', error);
+  }
+});
+
+
+    
     elements.authTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         elements.authTabs.forEach(t => t.classList.remove('active'));
