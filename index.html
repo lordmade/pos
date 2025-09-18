@@ -260,6 +260,114 @@
       stroke: var(--text-primary);
     }
 
+    /* Bottom Sheet Styles */
+    #auth-bottom-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      border-top-left-radius: 1.5rem;
+      border-top-right-radius: 1.5rem;
+      padding: 1rem;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      z-index: 20;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    #auth-bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    .auth-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .auth-tab {
+      padding: 0.5rem 1rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: border-bottom 0.3s;
+      font-size: 1rem;
+    }
+
+    .auth-tab.active {
+      border-bottom: 2px solid var(--highlight);
+    }
+
+    .auth-tab:hover {
+      color: var(--highlight);
+    }
+
+    .auth-content {
+      display: none;
+    }
+
+    .auth-content.active {
+      display: block;
+    }
+
+    .auth-content input {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+
+    .auth-content input:focus {
+      outline: none;
+      border-color: var(--highlight);
+    }
+
+    .google-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: var(--text-primary);
+      color: #1E1E1E;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    .google-button:hover {
+      background: var(--highlight);
+      color: var(--text-primary);
+    }
+
+    .google-button svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .auth-content button[type="submit"] {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--highlight);
+      color: var(--text-primary);
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .auth-content button[type="submit"]:hover {
+      background: #2C928D;
+    }
+
     /* Desktop-specific styles (min-width: 1024px) */
     @media (min-width: 1024px) {
       .tab-container {
@@ -349,6 +457,19 @@
       .sidebar-tabs .tab:hover::after {
         opacity: 1;
       }
+
+      /* Desktop bottom sheet */
+      #auth-bottom-sheet {
+        width: 24rem;
+        left: 50%;
+        transform: translate(-50%, 100%);
+        border-radius: 1.5rem;
+        bottom: 2rem;
+      }
+
+      #auth-bottom-sheet.open {
+        transform: translate(-50%, 0);
+      }
     }
   </style>
 </head>
@@ -426,10 +547,45 @@
         </svg>
       </button>
     </div>
+    <div id="auth-bottom-sheet">
+      <div class="auth-tabs">
+        <div class="auth-tab active" data-tab="login">Login</div>
+        <div class="auth-tab" data-tab="signup">Signup</div>
+      </div>
+      <div class="auth-content active" id="login-content">
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button type="submit" id="login-button">Login</button>
+        <div class="google-button" id="google-login">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.51h5.84c-.25 1.37-.99 2.54-2.1 3.32v2.76h3.37c1.97-1.81 3.1-4.48 3.1-7.84z"/>
+            <path d="M12 23.5c2.81 0 5.17-.91 6.89-2.46l-3.37-2.76c-.94.63-2.14 1.01-3.52 1.01-2.7 0-4.99-1.82-5.8-4.27H2.71v2.68C4.42 20.91 7.96 23.5 12 23.5z"/>
+            <path d="M6.2 14.27c-.2-.61-.31-1.26-.31-1.94s.11-1.33.31-1.94V7.71H2.71c-.71 1.44-1.11 3.04-1.11 4.79s.4 3.35 1.11 4.79h3.49v-2.68z"/>
+            <path d="M12 5.69c1.54 0 2.92.53 4.01 1.56l3.01-3.01C17.17 2.67 14.81 1.5 12 1.5c-4.04 0-7.58 2.59-9.29 5.79h3.49v-2.68c.81 1.45 2.1 2.58 3.8 3.08z"/>
+          </svg>
+          Sign in with Google
+        </div>
+      </div>
+      <div class="auth-content" id="signup-content">
+        <input type="text" id="signup-name" placeholder="Full Name" required>
+        <input type="email" id="signup-email" placeholder="Email" required>
+        <input type="password" id="signup-password" placeholder="Password" required>
+        <button type="submit" id="signup-button">Signup</button>
+        <div class="google-button" id="google-signup">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.51h5.84c-.25 1.37-.99 2.54-2.1 3.32v2.76h3.37c1.97-1.81 3.1-4.48 3.1-7.84z"/>
+            <path d="M12 23.5c2.81 0 5.17-.91 6.89-2.46l-3.37-2.76c-.94.63-2.14 1.01-3.52 1.01-2.7 0-4.99-1.82-5.8-4.27H2.71v2.68C4.42 20.91 7.96 23.5 12 23.5z"/>
+            <path d="M6.2 14.27c-.2-.61-.31-1.26-.31-1.94s.11-1.33.31-1.94V7.71H2.71c-.71 1.44-1.11 3.04-1.11 4.79s.4 3.35 1.11 4.79h3.49v-2.68z"/>
+            <path d="M12 5.69c1.54 0 2.92.53 4.01 1.56l3.01-3.01C17.17 2.67 14.81 1.5 12 1.5c-4.04 0-7.58 2.59-9.29 5.79h3.49v-2.68c.81 1.45 2.1 2.58 3.8 3.08z"/>
+          </svg>
+          Sign up with Google
+        </div>
+      </div>
+    </div>
   </main>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
     import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
     const firebaseConfig = {
@@ -461,23 +617,44 @@
       sidebar: document.getElementById('sidebar'),
       closeSidebar: document.getElementById('close-sidebar'),
       conversationList: document.getElementById('conversation-list'),
-      imageUploadButton: document.getElementById('image-upload-button')
+      imageUploadButton: document.getElementById('image-upload-button'),
+      authBottomSheet: document.getElementById('auth-bottom-sheet'),
+      authTabs: document.querySelectorAll('.auth-tab'),
+      loginContent: document.getElementById('login-content'),
+      signupContent: document.getElementById('signup-content'),
+      loginButton: document.getElementById('login-button'),
+      signupButton: document.getElementById('signup-button'),
+      googleLogin: document.getElementById('google-login'),
+      googleSignup: document.getElementById('google-signup'),
+      loginEmail: document.getElementById('login-email'),
+      loginPassword: document.getElementById('login-password'),
+      signupName: document.getElementById('signup-name'),
+      signupEmail: document.getElementById('signup-email'),
+      signupPassword: document.getElementById('signup-password')
     };
 
-    let app, auth, db;
+    let app, auth, db, provider;
 
     function initializeFirebase() {
       app = initializeApp(firebaseConfig);
       auth = getAuth(app);
       db = getDatabase(app);
+      provider = new GoogleAuthProvider();
       onAuthStateChanged(auth, (user) => {
         if (user) {
+          elements.authBottomSheet.classList.remove('open');
           elements.chatInput.disabled = false;
           elements.sendButton.disabled = false;
+          elements.imageUploadButton.disabled = false;
           loadConversations();
           elements.welcomeContainer.querySelector('h1').textContent = `Hey there, ${user.displayName || 'friend'}!`;
         } else {
-          window.location.href = 'signup.html';
+          elements.authBottomSheet.classList.add('open');
+          elements.chatInput.disabled = true;
+          elements.sendButton.disabled = true;
+          elements.imageUploadButton.disabled = true;
+          elements.welcomeContainer.classList.add('hidden');
+          elements.sidebar.classList.remove('open');
         }
       });
     }
@@ -591,6 +768,70 @@
         }, { onlyOnce: true });
       }
     }
+
+    // Bottom Sheet Tab Switching
+    elements.authTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        elements.authTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        elements.loginContent.classList.remove('active');
+        elements.signupContent.classList.remove('active');
+        document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
+      });
+    });
+
+    // Email/Password Login
+    elements.loginButton.addEventListener('click', async () => {
+      const email = elements.loginEmail.value.trim();
+      const password = elements.loginPassword.value.trim();
+      if (!email || !password) {
+        alert('Please enter both email and password.');
+        return;
+      }
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        alert('Login failed: ' + error.message);
+        console.error('Login Error:', error);
+      }
+    });
+
+    // Email/Password Signup
+    elements.signupButton.addEventListener('click', async () => {
+      const name = elements.signupName.value.trim();
+      const email = elements.signupEmail.value.trim();
+      const password = elements.signupPassword.value.trim();
+      if (!name || !email || !password) {
+        alert('Please fill in all fields.');
+        return;
+      }
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await userCredential.user.updateProfile({ displayName: name });
+      } catch (error) {
+        alert('Signup failed: ' + error.message);
+        console.error('Signup Error:', error);
+      }
+    });
+
+    // Google Login/Signup
+    elements.googleLogin.addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        alert('Google login failed: ' + error.message);
+        console.error('Google Login Error:', error);
+      }
+    });
+
+    elements.googleSignup.addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        alert('Google signup failed: ' + error.message);
+        console.error('Google Signup Error:', error);
+      }
+    });
 
     elements.sendButton.addEventListener('click', async () => {
       const prompt = elements.chatInput.value.trim();
