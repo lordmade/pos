@@ -1125,44 +1125,53 @@
       state.conversationId = null;
     }
 
-    function loadConversations() {
-      const user = auth.currentUser;
-      if (user) {
-        showOverlay(true);
-        elements.conversationList.innerHTML = '<div class="conversation-list-loading"><div class="spinner"></div></div>';
-        const refConversations = ref(db, `users/${user.uid}/conversations`);
-        onValue(refConversations, snapshot => {
-          elements.conversationList.innerHTML = '';
-          snapshot.forEach(child => {
-            const convo = child.val();
-            const div = document.createElement('div');
-            div.className = 'conversation-item';
-            div.textContent = convo.title;
-            div.addEventListener('click', () => {
-              state.messages = convo.messages;
-              elements.chatMessages.innerHTML = '';
-              state.messages.forEach(msg => {
-                if (msg.isImage) {
-                  appendMessage(msg.content, msg.sender, false, true, msg.messageId);
-                } else {
-                  appendMessage(msg.content, msg.sender, false, false, msg.messageId);
-                }
-              });
-              elements.sidebar.classList.remove('open');
-              elements.conversationSearch.classList.remove('expanded');
-              elements.sidebar.classList.remove('expanded');
-              state.conversationId = child.key;
-              elements.welcomeContainer.classList.add('hidden');
+   function loadConversations() {
+  const user = auth.currentUser;
+  if (user) {
+    showOverlay(true);
+    elements.conversationList.innerHTML = '<div class="conversation-list-loading"><div class="spinner"></div></div>';
+    const refConversations = ref(db, `users/${user.uid}/conversations`);
+    onValue(
+      refConversations,
+      (snapshot) => {
+        elements.conversationList.innerHTML = '';
+        snapshot.forEach((child) => {
+          const convo = child.val();
+          const div = document.createElement('div');
+          div.className = 'conversation-item';
+          div.textContent = convo.title;
+          div.addEventListener('click', () => {
+            state.messages = convo.messages;
+            elements.chatMessages.innerHTML = '';
+            state.messages.forEach((msg) => {
+              if (msg.isImage) {
+                appendMessage(msg.content, msg.sender, false, true, msg.messageId);
+              } else {
+                appendMessage(msg.content, msg.sender, false, false, msg.messageId);
+              }
             });
-            elements.conversationList.appendChild(div);
+            elements.sidebar.classList.remove('open');
+            elements.conversationSearch.classList.remove('expanded');
+            elements.sidebar.classList.remove('expanded');
+            state.conversationId = child.key;
+            elements.welcomeContainer.classList.add('hidden');
           });
-          if (snapshot.numChildren() === 0) {
-            elements.conversationList.innerHTML = '<p class="text-center text-gray-400">No conversations yet. Start one!</p>';
-          }
-          showOverlay(false);
-        }, { onlyOnce: true });
-      }
-    }
+          elements.conversationList.appendChild(div);
+        });
+        if (snapshot.size === 0) {
+          elements.conversationList.innerHTML = '<p class="text-center text-gray-400">No conversations yet. Start one!</p>';
+        }
+      },
+      (error) => {
+        console.error('Error loading conversations:', error);
+        elements.conversationList.innerHTML = '<p class="text-center text-gray-400">Failed to load conversations. Try again later.</p>';
+        showOverlay(false); // Hide spinner on error
+      },
+      { onlyOnce: true }
+    );
+    showOverlay(false); // Hide spinner after fetch attempt
+  }
+}
 
     function handleMessageActions() {
       elements.chatMessages.addEventListener('click', async (e) => {
