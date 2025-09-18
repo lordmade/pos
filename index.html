@@ -325,7 +325,8 @@
 
     #sidebar {
       transform: translateX(-100%);
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, width 0.3s ease;
+      width: 70%; /* Default width for mobile */
     }
 
     #sidebar.open {
@@ -333,7 +334,7 @@
     }
 
     #sidebar.expanded {
-      width: 100%;
+      width: 30%;
     }
 
     .conversation-item {
@@ -636,6 +637,29 @@
       animation: slideIn 0.3s ease;
     }
 
+    /* Overlay Spinner */
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 40;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .overlay-spinner {
+      width: 4rem;
+      height: 4rem;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid var(--highlight);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
     @media (min-width: 1024px) {
       .tab-container {
         display: none;
@@ -661,10 +685,15 @@
         height: 100vh;
         z-index: 10;
         border-radius: 0 1.5rem 1.5rem 0;
+        width: 5rem; /* Override for desktop */
       }
 
       #close-sidebar {
         display: none;
+      }
+
+      #sidebar.expanded {
+        width: 30%;
       }
 
       .chat-input-container {
@@ -748,6 +777,9 @@
   <main class="flex flex-col h-screen">
     <div id="offline-warning" class="hidden">You are offline. Some features may not work.</div>
     <div id="custom-alert" class="custom-alert"></div>
+    <div id="overlay">
+      <div class="overlay-spinner"></div>
+    </div>
     <button id="hamburger-button" class="fixed top-4 left-4 w-10 h-10 bg-black rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition">
       <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
         <path d="M4 6h16M4 12h16M4 18h16"/>
@@ -941,7 +973,8 @@
       profileTab: document.getElementById('profile-tab'),
       settingsTab: document.getElementById('settings-tab'),
       profileTabMobile: document.getElementById('profile-tab-mobile'),
-      settingsTabMobile: document.getElementById('settings-tab-mobile')
+      settingsTabMobile: document.getElementById('settings-tab-mobile'),
+      overlay: document.getElementById('overlay')
     };
 
     let app, auth, db, provider;
@@ -952,6 +985,10 @@
       setTimeout(() => {
         elements.customAlert.style.display = 'none';
       }, duration);
+    }
+
+    function showOverlay(show = true) {
+      elements.overlay.style.display = show ? 'flex' : 'none';
     }
 
     function initializeFirebase() {
@@ -1091,6 +1128,7 @@
     function loadConversations() {
       const user = auth.currentUser;
       if (user) {
+        showOverlay(true);
         elements.conversationList.innerHTML = '<div class="conversation-list-loading"><div class="spinner"></div></div>';
         const refConversations = ref(db, `users/${user.uid}/conversations`);
         onValue(refConversations, snapshot => {
@@ -1121,6 +1159,7 @@
           if (snapshot.numChildren() === 0) {
             elements.conversationList.innerHTML = '<p class="text-center text-gray-400">No conversations yet. Start one!</p>';
           }
+          showOverlay(false);
         }, { onlyOnce: true });
       }
     }
@@ -1291,6 +1330,15 @@
       items.forEach(item => {
         item.style.display = item.textContent.toLowerCase().includes(query) ? 'block' : 'none';
       });
+    });
+
+    // Close sidebar on outside click
+    document.addEventListener('click', (e) => {
+      if (elements.sidebar.classList.contains('open') && !elements.sidebar.contains(e.target) && !elements.hamburgerButton.contains(e.target)) {
+        elements.sidebar.classList.remove('open');
+        elements.conversationSearch.classList.remove('expanded');
+        elements.sidebar.classList.remove('expanded');
+      }
     });
 
     elements.imageUploadButton.addEventListener('click', () => {
