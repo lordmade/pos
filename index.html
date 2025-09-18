@@ -771,6 +771,36 @@
         transform: translateX(0);
       }
     }
+
+.toggle-switch {
+    appearance: none;
+    width: 3rem;
+    height: 1.5rem;
+    background: var(--border);
+    border-radius: 9999px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle-switch:checked {
+    background: var(--highlight);
+  }
+  .toggle-switch::before {
+    content: '';
+    position: absolute;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: var(--text-primary);
+    border-radius: 50%;
+    top: 0.125rem;
+    left: 0.125rem;
+    transition: transform 0.2s;
+  }
+  .toggle-switch:checked::before {
+    transform: translateX(1.5rem);
+  }
+
+    
   </style>
 </head>
 <body class="light">
@@ -911,12 +941,18 @@
 </div>
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal">
-      <div class="modal-content">
-        <button class="close-modal">&times;</button>
-        <h2>Settings</h2>
-        <p>Your settings options go here.</p>
+  <div class="modal-content">
+    <button class="close-modal">&times;</button>
+    <h2>Settings</h2>
+    <div id="settings-content">
+      <div class="flex items-center justify-between mb-4">
+        <label for="theme-toggle" class="text-[var(--text-primary)]">Dark Mode</label>
+        <input type="checkbox" id="theme-toggle" class="toggle-switch">
       </div>
+      <button id="save-settings-button" class="mt-4 px-4 py-2 bg-[var(--highlight)] text-[var(--text-primary)] rounded-full hover:bg-[#2C928D]">Save Settings</button>
     </div>
+  </div>
+</div>
   </main>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
@@ -980,6 +1016,8 @@
       profileTabMobile: document.getElementById('profile-tab-mobile'),
       settingsTabMobile: document.getElementById('settings-tab-mobile'),
       overlay: document.getElementById('overlay'),
+      themeToggle: document.getElementById('theme-toggle'),
+  saveSettingsButton: document.getElementById('save-settings-button'),
       signoutButton: document.getElementById('signout-button')
     };
 
@@ -1025,6 +1063,26 @@
       });
     }
 
+function updateSettingsModal() {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  elements.themeToggle.checked = savedTheme === 'dark';
+}
+
+function saveSettings() {
+  const isDarkMode = elements.themeToggle.checked;
+  document.body.classList.remove('light', 'dark');
+  document.body.classList.add(isDarkMode ? 'dark' : 'light');
+  localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  showCustomAlert('Settings saved!');
+  closeModal('settings-modal');
+}
+
+function openSettingsModal() {
+  updateSettingsModal();
+  openModal('settings-modal');
+}
+
+    
 
 function updateProfileModal(user) {
   const profileAvatar = document.getElementById('profile-avatar');
@@ -1249,8 +1307,8 @@ function openProfileModal() {
       document.getElementById(modalId).style.display = 'none';
     }
 
-    elements.profileTab.addEventListener('click', () => openModal('profile-modal'));
-    elements.settingsTab.addEventListener('click', () => openModal('settings-modal'));
+    elements.settingsTab.addEventListener('click', openSettingsModal);
+elements.settingsTabMobile.addEventListener('click', openSettingsModal);
     elements.profileTab.addEventListener('click', openProfileModal);
     elements.profileTabMobile.addEventListener('click', openProfileModal);
 
@@ -1278,7 +1336,7 @@ elements.signoutButton.addEventListener('click', async () => {
   }
 });
 
-
+elements.saveSettingsButton.addEventListener('click', saveSettings);
     
     elements.authTabs.forEach(tab => {
       tab.addEventListener('click', () => {
