@@ -313,7 +313,8 @@
       display: block;
     }
 
-    .auth-content input {
+    .auth-content input,
+    .auth-content select {
       width: 100%;
       padding: 0.75rem;
       margin-bottom: 1rem;
@@ -324,7 +325,16 @@
       font-size: 1rem;
     }
 
-    .auth-content input:focus {
+    .auth-content select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23FFFFFF' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 1rem;
+    }
+
+    .auth-content input:focus,
+    .auth-content select:focus {
       outline: none;
       border-color: var(--highlight);
     }
@@ -579,6 +589,7 @@
       <div class="auth-tabs">
         <div class="auth-tab active" data-tab="login">Login</div>
         <div class="auth-tab" data-tab="signup">Signup</div>
+        <div class="auth-tab" data-tab="settings">Settings</div>
       </div>
       <div class="auth-content active" id="login-content">
         <input type="email" id="login-email" placeholder="Email" required>
@@ -609,12 +620,27 @@
           Sign up with Google
         </div>
       </div>
+      <div class="auth-content" id="settings-content">
+        <select id="language-select">
+          <option value="af">Afrikaans</option>
+          <option value="en" selected>English</option>
+          <option value="nr">Ndebele</option>
+          <option value="nso">Northern Sotho</option>
+          <option value="st">Sotho</option>
+          <option value="ss">Swazi</option>
+          <option value="ts">Tsonga</option>
+          <option value="tn">Tswana</option>
+          <option value="ve">Venda</option>
+          <option value="xh">Xhosa</option>
+          <option value="zu">Zulu</option>
+        </select>
+      </div>
     </div>
   </main>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBOyZ3As4GTuNvjemvPF_SpsC6m6vqtNhc",
@@ -631,7 +657,8 @@
       messages: [],
       geminiApiKey: 'AIzaSyD79iPuCs7sW4DQJ7ij9SZZXtEJm6po8K8', // Move to environment variable in production
       hasChatted: false,
-      conversationId: null
+      conversationId: null,
+      selectedLanguage: 'en' // Default to English
     };
 
     const elements = {
@@ -650,6 +677,7 @@
       authTabs: document.querySelectorAll('.auth-tab'),
       loginContent: document.getElementById('login-content'),
       signupContent: document.getElementById('signup-content'),
+      settingsContent: document.getElementById('settings-content'),
       loginButton: document.getElementById('login-button'),
       signupButton: document.getElementById('signup-button'),
       googleLogin: document.getElementById('google-login'),
@@ -660,7 +688,8 @@
       signupEmail: document.getElementById('signup-email'),
       signupPassword: document.getElementById('signup-password'),
       authAvatar: document.getElementById('auth-avatar'),
-      headerAvatar: document.getElementById('header-avatar')
+      headerAvatar: document.getElementById('header-avatar'),
+      languageSelect: document.getElementById('language-select')
     };
 
     let app, auth, db, provider;
@@ -680,6 +709,7 @@
           elements.welcomeContainer.querySelector('h1').textContent = `Hey there, ${user.displayName || 'friend'}!`;
           elements.headerAvatar.textContent = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
           elements.headerAvatar.classList.remove('hidden');
+          loadUserSettings(user.uid);
         } else {
           elements.authPanel.classList.add('open');
           elements.chatInput.disabled = true;
@@ -688,6 +718,8 @@
           elements.welcomeContainer.classList.add('hidden');
           elements.sidebar.classList.remove('open');
           elements.headerAvatar.classList.remove('hidden');
+          state.selectedLanguage = 'en';
+          elements.languageSelect.value = 'en';
           updateAvatar();
         }
       });
@@ -699,6 +731,26 @@
       const text = (name || email || 'U').charAt(0).toUpperCase();
       elements.authAvatar.textContent = text;
       elements.headerAvatar.textContent = text;
+    }
+
+    function saveUserSettings(uid) {
+      set(ref(db, `users/${uid}/settings`), {
+        language: state.selectedLanguage
+      });
+    }
+
+    function loadUserSettings(uid) {
+      const settingsRef = ref(db, `users/${uid}/settings`);
+      onValue(settingsRef, (snapshot) => {
+        const settings = snapshot.val();
+        if (settings && settings.language) {
+          state.selectedLanguage = settings.language;
+          elements.languageSelect.value = settings.language;
+        } else {
+          state.selectedLanguage = 'en';
+          elements.languageSelect.value = 'en';
+        }
+      }, { onlyOnce: true });
     }
 
     function appendMessage(content, sender, isTyping = false, isImage = false) {
@@ -737,11 +789,11 @@
       try {
         let requestBody = {
           contents: [{
-            parts: [{ text: `You are Vynix AI, crafted by Katlego in Mokopane, South Africa. Respond like a friendly, human buddy with a warm, conversational tone. Keep it concise and fun! Query: ${prompt}` }]
+            parts: [{ text: `You are Vynix AI, crafted by Katlego in Mokopane, South Africa. Respond like a friendly, human buddy with a warm, conversational tone in ${state.selectedLanguage} (South African language: Afrikaans=af, English=en, Ndebele=nr, Northern Sotho=nso, Sotho=st, Swazi=ss, Tsonga=ts, Tswana=tn, Venda=ve, Xhosa=xh, Zulu=zu). Keep it concise and fun! Query: ${prompt}` }]
           }]
         };
         if (imageUrl) {
-          requestBody.contents[0].parts[0].text = `Hey, let's check out this image! Describe what you see in a fun, friendly way.`;
+          requestBody.contents[0].parts[0].text = `Hey, let's check out this image! Describe what you see in a fun, friendly way in ${state.selectedLanguage}.`;
           requestBody.contents[0].parts.push({ inlineData: { mimeType: 'image/jpeg', data: imageUrl } });
         }
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.geminiApiKey}`, {
@@ -811,16 +863,26 @@
       }
     }
 
-    // Bottom Sheet Tab Switching
+    // Bottom Sheet/Right Slide Tab Switching
     elements.authTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         elements.authTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         elements.loginContent.classList.remove('active');
         elements.signupContent.classList.remove('active');
+        elements.settingsContent.classList.remove('active');
         document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
         updateAvatar();
       });
+    });
+
+    // Language Selection
+    elements.languageSelect.addEventListener('change', () => {
+      state.selectedLanguage = elements.languageSelect.value;
+      const user = auth.currentUser;
+      if (user) {
+        saveUserSettings(user.uid);
+      }
     });
 
     // Update avatar on input change
@@ -856,6 +918,7 @@
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await userCredential.user.updateProfile({ displayName: name });
+        saveUserSettings(userCredential.user.uid);
       } catch (error) {
         alert('Signup failed: ' + error.message);
         console.error('Signup Error:', error);
@@ -865,7 +928,8 @@
     // Google Login/Signup
     elements.googleLogin.addEventListener('click', async () => {
       try {
-        await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, provider);
+        saveUserSettings(result.user.uid);
       } catch (error) {
         alert('Google login failed: ' + error.message);
         console.error('Google Login Error:', error);
@@ -874,7 +938,8 @@
 
     elements.googleSignup.addEventListener('click', async () => {
       try {
-        await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, provider);
+        saveUserSettings(result.user.uid);
       } catch (error) {
         alert('Google signup failed: ' + error.message);
         console.error('Google Signup Error:', error);
