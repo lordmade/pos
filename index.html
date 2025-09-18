@@ -40,6 +40,7 @@
       padding: 0.75rem;
       display: flex;
       justify-content: center;
+      align-items: center;
       gap: 0.5rem;
       z-index: 10;
       background: var(--bg);
@@ -260,8 +261,8 @@
       stroke: var(--text-primary);
     }
 
-    /* Bottom Sheet Styles */
-    #auth-bottom-sheet {
+    /* Auth Panel Styles (Mobile: Bottom Sheet, Desktop: Right Slide) */
+    #auth-panel {
       position: fixed;
       bottom: 0;
       left: 0;
@@ -276,7 +277,7 @@
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    #auth-bottom-sheet.open {
+    #auth-panel.open {
       transform: translateY(0);
     }
 
@@ -368,6 +369,24 @@
       background: #2C928D;
     }
 
+    .avatar {
+      width: 2.5rem;
+      height: 2.5rem;
+      background: var(--highlight);
+      color: var(--text-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    #header-avatar {
+      margin-right: 1rem;
+    }
+
     /* Desktop-specific styles (min-width: 1024px) */
     @media (min-width: 1024px) {
       .tab-container {
@@ -376,6 +395,10 @@
 
       #hamburger-button {
         display: none; /* Hide hamburger button on desktop */
+      }
+
+      #header-avatar {
+        display: none; /* Hide avatar on desktop */
       }
 
       #sidebar {
@@ -458,17 +481,20 @@
         opacity: 1;
       }
 
-      /* Desktop bottom sheet */
-      #auth-bottom-sheet {
+      /* Desktop right slide panel */
+      #auth-panel {
         width: 24rem;
-        left: 50%;
-        transform: translate(-50%, 100%);
-        border-radius: 1.5rem;
-        bottom: 2rem;
+        right: 0;
+        left: auto;
+        top: 0;
+        height: 100vh;
+        border-radius: 1.5rem 0 0 1.5rem; /* Rounded left edge */
+        transform: translateX(100%);
+        box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
       }
 
-      #auth-bottom-sheet.open {
-        transform: translate(-50%, 0);
+      #auth-panel.open {
+        transform: translateX(0);
       }
     }
   </style>
@@ -510,6 +536,7 @@
       <div id="conversation-list" class="flex-1 overflow-y-auto p-4"></div>
     </div>
     <div class="tab-container">
+      <div id="header-avatar" class="avatar"></div>
       <a href="profile.html" class="tab" id="profile-tab-mobile">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
           <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -547,7 +574,8 @@
         </svg>
       </button>
     </div>
-    <div id="auth-bottom-sheet">
+    <div id="auth-panel">
+      <div id="auth-avatar" class="avatar"></div>
       <div class="auth-tabs">
         <div class="auth-tab active" data-tab="login">Login</div>
         <div class="auth-tab" data-tab="signup">Signup</div>
@@ -618,7 +646,7 @@
       closeSidebar: document.getElementById('close-sidebar'),
       conversationList: document.getElementById('conversation-list'),
       imageUploadButton: document.getElementById('image-upload-button'),
-      authBottomSheet: document.getElementById('auth-bottom-sheet'),
+      authPanel: document.getElementById('auth-panel'),
       authTabs: document.querySelectorAll('.auth-tab'),
       loginContent: document.getElementById('login-content'),
       signupContent: document.getElementById('signup-content'),
@@ -630,7 +658,9 @@
       loginPassword: document.getElementById('login-password'),
       signupName: document.getElementById('signup-name'),
       signupEmail: document.getElementById('signup-email'),
-      signupPassword: document.getElementById('signup-password')
+      signupPassword: document.getElementById('signup-password'),
+      authAvatar: document.getElementById('auth-avatar'),
+      headerAvatar: document.getElementById('header-avatar')
     };
 
     let app, auth, db, provider;
@@ -642,21 +672,33 @@
       provider = new GoogleAuthProvider();
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          elements.authBottomSheet.classList.remove('open');
+          elements.authPanel.classList.remove('open');
           elements.chatInput.disabled = false;
           elements.sendButton.disabled = false;
           elements.imageUploadButton.disabled = false;
           loadConversations();
           elements.welcomeContainer.querySelector('h1').textContent = `Hey there, ${user.displayName || 'friend'}!`;
+          elements.headerAvatar.textContent = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+          elements.headerAvatar.classList.remove('hidden');
         } else {
-          elements.authBottomSheet.classList.add('open');
+          elements.authPanel.classList.add('open');
           elements.chatInput.disabled = true;
           elements.sendButton.disabled = true;
           elements.imageUploadButton.disabled = true;
           elements.welcomeContainer.classList.add('hidden');
           elements.sidebar.classList.remove('open');
+          elements.headerAvatar.classList.remove('hidden');
+          updateAvatar();
         }
       });
+    }
+
+    function updateAvatar() {
+      const email = elements.loginEmail.value || elements.signupEmail.value || '';
+      const name = elements.signupName.value || '';
+      const text = (name || email || 'U').charAt(0).toUpperCase();
+      elements.authAvatar.textContent = text;
+      elements.headerAvatar.textContent = text;
     }
 
     function appendMessage(content, sender, isTyping = false, isImage = false) {
@@ -777,8 +819,14 @@
         elements.loginContent.classList.remove('active');
         elements.signupContent.classList.remove('active');
         document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
+        updateAvatar();
       });
     });
+
+    // Update avatar on input change
+    elements.loginEmail.addEventListener('input', updateAvatar);
+    elements.signupName.addEventListener('input', updateAvatar);
+    elements.signupEmail.addEventListener('input', updateAvatar);
 
     // Email/Password Login
     elements.loginButton.addEventListener('click', async () => {
