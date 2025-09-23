@@ -2,31 +2,26 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Vynix AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vynix AI - Develop. Connect.</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-light: #F7F7F8;
-      --card-bg-light: #FFFFFF;
+      --bg-light: #ffffff;
+      --card-bg-light: rgba(255, 255, 255, 0.8);
       --text-primary-light: #1C2526;
       --text-secondary-light: #4B5EAA;
-      --border-light: #4A5568;
+      --border-light: rgba(74, 85, 104, 0.2);
       --highlight-light: #38B2AC;
-      --user-msg-bg-light: #E0E7FF;
-      --ai-msg-bg-light: #F1F5F9;
       --bg-dark: #1A202C;
-      --card-bg-dark: #2D3748;
+      --card-bg-dark: rgba(45, 55, 72, 0.8);
       --text-primary-dark: #E2E8F0;
       --text-secondary-dark: #A0AEC0;
-      --border-dark: #4A5568;
+      --border-dark: rgba(74, 85, 104, 0.2);
       --highlight-dark: #4FD1C5;
-      --user-msg-bg-dark: #4C51BF;
-      --ai-msg-bg-dark: #2D3748;
+      --glass-blur: blur(10px);
+      --glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     body {
@@ -35,7 +30,10 @@
       color: var(--text-secondary-light);
       min-height: 100vh;
       margin: 0;
-      transition: background 0.3s ease;
+      overflow-x: hidden;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 10 L60 20 L70 10 L80 20 L90 10 L100 20 L90 30 L80 40 L70 30 L60 40 L50 30 Z' fill='none' stroke='%234A5568' stroke-weight='1' opacity='0.1'/%3E%3Ccircle cx='50' cy='50' r='40' fill='none' stroke='%234A5568' stroke-weight='1' opacity='0.1'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      transition: background-color 0.3s ease;
     }
 
     body.dark {
@@ -45,8 +43,6 @@
       --text-secondary: var(--text-secondary-dark);
       --border: var(--border-dark);
       --highlight: var(--highlight-dark);
-      --user-msg-bg: var(--user-msg-bg-dark);
-      --ai-msg-bg: var(--ai-msg-bg-dark);
     }
 
     body.light {
@@ -56,443 +52,236 @@
       --text-secondary: var(--text-secondary-light);
       --border: var(--border-light);
       --highlight: var(--highlight-light);
-      --user-msg-bg: var(--user-msg-bg-light);
-      --ai-msg-bg: var(--ai-msg-bg-light);
     }
 
-    .tab-container {
+    .navbar {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      padding: 0.75rem;
+      padding: 1rem 2rem;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
       z-index: 10;
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .tab {
       background: var(--card-bg);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-      padding: 0.5rem 1rem;
-      border-radius: 9999px;
-      cursor: pointer;
-      transition: background 0.3s;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-    }
-
-    .tab:hover, .tab.active {
-      background: var(--highlight);
-    }
-
-    .tab svg {
-      width: 1rem;
-      height: 1rem;
-      stroke: var(--text-primary);
-    }
-
-    .welcome-container {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      margin-top: 3rem;
-    }
-
-    .welcome-container h1 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #1E1E1E;
-    }
-
-    .hidden {
+      backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--glass-shadow);
+      transition: all 0.3s ease;
       display: none;
     }
 
-    .chat-input-container {
+    .navbar.active {
+      display: flex;
+    }
+
+    .navbar-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.3s ease;
+    }
+
+    .navbar-logo .logo-icon {
+      width: 30px;
+      height: 30px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='5' y='5' width='14' height='14' rx='2' fill='none' stroke='%231C2526' stroke-weight='2'/%3E%3Ccircle cx='12' cy='12' r='6' fill='none' stroke='%231C2526' stroke-weight='2'/%3E%3Cline x1='12' y1='6' x2='12' y2='18' stroke='%231C2526' stroke-weight='2'/%3E%3Cline x1='6' y1='12' x2='18' y2='12' stroke='%231C2526' stroke-weight='2'/%3E%3C/svg%3E") no-repeat center;
+      background-size: contain;
+      transition: transform 0.3s ease;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--text-primary);
+      font-size: 1rem;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--highlight);
+      transform: scale(1.1);
+    }
+
+    .mobile-nav {
       position: fixed;
       bottom: 1rem;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
+      justify-content: space-around;
       align-items: center;
-      width: 90%;
-      max-width: 600px;
-      background: var(--card-bg);
-      border-radius: 1.5rem;
-      padding: 0.5rem 0.75rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .chat-input-container.typing::after {
-      content: 'Typing...';
-      position: absolute;
-      top: -1.5rem;
-      left: 1rem;
-      color: var(--text-secondary);
-      font-size: 0.75rem;
-      font-style: italic;
-    }
-
-    #chat-input {
-      flex: 1;
-      background: transparent;
-      color: var(--text-primary);
-      border: none;
-      padding: 0.75rem 0.5rem;
-      outline: none;
-      font-size: 1rem;
-    }
-
-    #send-button, #image-upload-button {
-      background: transparent;
-      border: none;
-      padding: 0.5rem;
-      cursor: pointer;
-      border-radius: 9999px;
-      transition: background 0.2s;
-    }
-
-    #send-button:hover, #image-upload-button:hover {
-      background: rgba(0, 0, 0, 0.1);
-    }
-
-    #send-button svg, #image-upload-button svg {
-      width: 1.5rem;
-      height: 1.5rem;
-      stroke: var(--text-primary);
-    }
-
-    #chat-messages {
-      margin: 5rem 1rem 6rem 1rem;
-      padding: 1rem;
-      overflow-y: auto;
-      max-height: calc(100vh - 11rem);
-    }
-
-    .message {
-      max-width: 70%;
-      padding: 0.75rem 1.25rem;
-      border-radius: 1.5rem;
-      margin: 0.5rem 1rem;
-      word-wrap: break-word;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-      animation: slideIn 0.3s ease-out;
-      position: relative;
-      display: inline-block;
-    }
-
-    .message.user {
-      background: linear-gradient(135deg, var(--user-msg-bg), #C7D2FE);
-      color: #1E1E1E;
-      margin-left: auto;
-      border-bottom-right-radius: 0.25rem;
-    }
-
-    .message.ai {
-      background: linear-gradient(135deg, var(--ai-msg-bg), #F1F5F9);
-      color: var(--text-primary);
-      margin-right: auto;
-      border-bottom-left-radius: 0.25rem;
-    }
-
-    .message.ai ul, .message.ai ol {
-      margin: 0.5rem 0;
-      padding-left: 1.5rem;
-    }
-
-    .message.ai code {
-      background: rgba(0, 0, 0, 0.1);
-      padding: 0.2rem 0.4rem;
-      border-radius: 0.25rem;
-      font-family: 'Courier New', Courier, monospace;
-    }
-
-    .message.ai pre {
-      background: rgba(0, 0, 0, 0.1);
-      padding: 1rem;
-      border-radius: 0.5rem;
-      overflow-x: auto;
-    }
-
-    .message.processing {
-      background: var(--ai-msg-bg);
-      color: var(--text-primary);
-      font-style: italic;
-      opacity: 0.7;
-    }
-
-    .message img {
-      max-width: 100%;
-      border-radius: 0.5rem;
-      margin-top: 0.5rem;
-    }
-
-    .message:hover::before {
-      content: attr(data-timestamp);
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--card-bg);
-      color: var(--text-primary);
-      padding: 0.25rem 0.5rem;
-      border-radius: 0.25rem;
-      font-size: 0.75rem;
-      white-space: nowrap;
-      z-index: 10;
-    }
-
-    .message-actions {
-      display: none;
-      position: absolute;
-      top: 0.5rem;
-      right: 0.5rem;
-      gap: 0.25rem;
-    }
-
-    .message.user:hover .message-actions {
-      display: flex;
-    }
-
-    .edit-btn, .delete-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.25rem;
-      border-radius: 9999px;
-    }
-
-    .edit-btn svg, .delete-btn svg {
-      width: 1rem;
-      height: 1rem;
-      stroke: var(--text-secondary);
-    }
-
-    .edit-btn:hover, .delete-btn:hover {
-      background: rgba(0, 0, 0, 0.1);
-    }
-
-    .typing-indicator {
-      display: inline-flex;
-      gap: 0.25rem;
-      align-items: center;
-    }
-
-    .typing-dot {
-      width: 0.5rem;
-      height: 0.5rem;
-      background: var(--text-primary);
-      border-radius: 50%;
-      animation: typing 1.2s infinite;
-    }
-
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes typing {
-      0%, 100% { opacity: 0.3; transform: translateY(0); }
-      50% { opacity: 1; transform: translateY(-3px); }
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes vibrate {
-      0% { transform: translateX(0); }
-      20% { transform: translateX(-2px); }
-      40% { transform: translateX(2px); }
-      60% { transform: translateX(-2px); }
-      80% { transform: translateX(2px); }
-      100% { transform: translateX(0); }
-    }
-
-    .vibrate {
-      animation: vibrate 0.2s ease-in-out;
-    }
-
-    #sidebar {
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      width: 70%;
-      background: var(--card-bg);
-    }
-
-    #sidebar.open {
-      transform: translateX(0);
-    }
-
-    #hamburger-button {
-      background: #1C2526;
-      border: none;
-      padding: 0.4rem;
-      cursor: pointer;
-      border-radius: 50%;
-      transition: background 0.2s;
-      width: 2.5rem;
-      height: 2.5rem;
-    }
-
-    #hamburger-button:hover {
-      background: var(--highlight);
-    }
-
-    #hamburger-button svg {
-      width: 1.25rem;
-      height: 1.25rem;
-      stroke: var(--text-primary);
-    }
-
-    #offline-warning {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: #EF4444;
-      color: var(--text-primary);
-      text-align: center;
-      padding: 0.5rem;
-      z-index: 30;
-    }
-
-    #auth-panel {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--card-bg);
-      border-top-left-radius: 1.5rem;
-      border-top-right-radius: 1.5rem;
-      padding: 1rem;
-      transform: translateY(100%);
-      transition: transform 0.3s ease;
-      z-index: 20;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    #auth-panel.open {
-      transform: translateY(0);
-    }
-
-    .auth-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .auth-tab {
+      background: #ffffff;
       padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      width: 90%;
+      max-width: 400px;
+      z-index: 10;
+      display: none;
+    }
+
+    .mobile-nav.active {
+      display: flex;
+    }
+
+    .mobile-nav a {
       color: var(--text-primary);
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: border-bottom 0.3s;
-      font-size: 1rem;
+      font-size: 0.875rem;
+      text-decoration: none;
+      text-align: center;
+      flex: 1;
+      padding: 0.5rem;
+      transition: color 0.3s ease;
     }
 
-    .auth-tab.active {
-      border-bottom: 2px solid var(--highlight);
-    }
-
-    .auth-tab:hover {
+    .mobile-nav a:hover {
       color: var(--highlight);
     }
 
-    .auth-content {
-      display: none;
-    }
-
-    .auth-content.active {
-      display: block;
-    }
-
-    .auth-content input {
-      width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      background: rgba(0, 0, 0, 0.1);
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      color: var(--text-primary);
-      font-size: 1rem;
-    }
-
-    .auth-content input:focus {
-      outline: none;
-      border-color: var(--highlight);
-    }
-
-    .google-button {
+    .hero {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      background: var(--text-primary);
-      color: #1E1E1E;
-      padding: 0.75rem;
-      border-radius: 9999px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background 0.2s;
+      min-height: 100vh;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      background: url('https://i.postimg.cc/L84Cm7VR/Gemini-Generated-Image-go2lr2go2lr2go2l.png') no-repeat center center;
+      background-size: cover;
+      animation: fadeIn 1s ease-out;
     }
 
-    .google-button:hover {
-      background: var(--highlight);
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.7);
+      z-index: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      animation: slideUp 1s ease-out;
+    }
+
+    .hero h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3rem;
+      font-weight: 700;
       color: var(--text-primary);
-    }
-
-    .google-button svg {
-      width: 1.5rem;
-      height: 1.5rem;
-    }
-
-    .auth-content button[type="submit"] {
-      width: 100%;
-      padding: 0.75rem;
-      background: var(--highlight);
-      color: var(--text-primary);
-      border: none;
-      border-radius: 9999px;
-      cursor: pointer;
-      font-size: 1rem;
       margin-bottom: 1rem;
-    }
-
-    .auth-content button[type="submit"]:hover {
-      background: #2C928D;
-    }
-
-    .avatar {
-      width: 2.5rem;
-      height: 2.5rem;
-      background: var(--highlight);
-      color: var(--text-primary);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-      font-weight: 600;
       text-transform: uppercase;
+      letter-spacing: 2px;
+      animation: pulse 2s infinite;
+    }
+
+    .hero h1 span {
+      color: var(--highlight-light);
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin-bottom: 2rem;
+      animation: fadeInUp 1.5s ease-out;
+    }
+
+    .cta-button {
+      background: var(--highlight);
+      color: var(--text-primary);
+      padding: 0.75rem 2rem;
+      border-radius: 9999px;
+      font-size: 1.125rem;
+      font-weight: 600;
+      border: none;
       cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 1;
+      backdrop-filter: var(--glass-blur);
+      box-shadow: var(--glass-shadow);
+      animation: bounceIn 1.5s ease-out;
     }
 
-    #header-avatar {
-      margin-right: 1rem;
+    .cta-button:hover {
+      background: #2C928D;
+      transform: scale(1.05) rotate(2deg);
     }
 
-    .modal {
+    .features {
+      padding: 4rem 2rem;
+      background: var(--card-bg);
+      backdrop-filter: var(--glass-blur);
+      box-shadow: var(--glass-shadow);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      margin: 2rem auto;
+      max-width: 1200px;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .features h2 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: slideIn 1s ease-out;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      padding: 1.5rem;
+      border-radius: 1rem;
+      text-align: center;
+      box-shadow: var(--glass-shadow);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      animation: fadeInUp 1.5s ease-out;
+      animation-delay: calc(var(--order) * 0.2s);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px) scale(1.05);
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .settings-modal {
       display: none;
       position: fixed;
       z-index: 50;
@@ -513,6 +302,9 @@
       max-width: 500px;
       position: relative;
       animation: slideInUp 0.3s ease;
+      backdrop-filter: var(--glass-blur);
+      box-shadow: var(--glass-shadow);
+      border: 1px solid var(--border);
     }
 
     .close-modal {
@@ -525,20 +317,11 @@
       cursor: pointer;
       background: none;
       border: none;
+      transition: color 0.3s ease;
     }
 
     .close-modal:hover {
       color: var(--highlight);
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes slideInUp {
-      from { transform: translateY(50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
     }
 
     .custom-alert {
@@ -550,36 +333,44 @@
       color: var(--text-primary);
       padding: 1rem 2rem;
       border-radius: 9999px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: var(--glass-shadow);
       z-index: 100;
       display: none;
       animation: slideIn 0.3s ease;
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border);
     }
 
-    #overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 40;
-      justify-content: center;
-      align-items: center;
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
-    .overlay-spinner {
-      width: 4rem;
-      height: 4rem;
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top: 4px solid var(--highlight);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    @keyframes slideIn {
+      from { transform: translateX(-20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
     }
 
     .toggle-switch {
@@ -590,7 +381,7 @@
       border-radius: 9999px;
       position: relative;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.2s ease;
     }
 
     .toggle-switch:checked {
@@ -606,237 +397,123 @@
       border-radius: 50%;
       top: 0.125rem;
       left: 0.125rem;
-      transition: transform 0.2s;
+      transition: transform 0.2s ease;
     }
 
     .toggle-switch:checked::before {
       transform: translateX(1.5rem);
     }
 
-    @media (min-width: 1024px) {
-      .tab-container {
+    @media (min-width: 768px) {
+      .navbar {
         display: flex;
       }
 
-      #hamburger-button {
+      .mobile-nav {
+        display: none;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .navbar {
         display: none;
       }
 
-      #header-avatar {
+      .mobile-nav {
         display: flex;
       }
 
-      #sidebar {
-        transform: translateX(0);
-        width: 5rem;
-        background: var(--card-bg);
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 10;
-        border-radius: 0 1.5rem 1.5rem 0;
+      .hero h1 {
+        font-size: 2rem;
       }
 
-      #close-sidebar {
-        display: none;
+      .hero p {
+        font-size: 1rem;
       }
 
-      .chat-input-container {
-        left: calc(5rem + 50%);
-        max-width: 800px;
+      .cta-button {
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
       }
 
-      #chat-messages {
-        margin-left: 5rem;
-        margin-top: 1rem;
-        margin-bottom: 6rem;
-        max-height: calc(100vh - 7rem);
+      .features {
+        padding: 2rem 1rem;
       }
 
-      .welcome-container {
-        margin-left: 5rem;
+      .features h2 {
+        font-size: 1.75rem;
       }
 
-      .sidebar-tabs {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding: 1rem;
-        border-bottom: 1px solid var(--border);
+      .feature-card h3 {
+        font-size: 1.25rem;
       }
 
-      .sidebar-tabs .tab {
-        border-radius: 9999px;
-        justify-content: center;
-        padding: 0.75rem;
-        position: relative;
-      }
-
-      .sidebar-tabs .tab span {
-        display: none;
-      }
-
-      .sidebar-tabs .tab svg {
-        width: 1.5rem;
-        height: 1.5rem;
-      }
-
-      .sidebar-tabs .tab:hover::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        left: 100%;
-        margin-left: 0.5rem;
-        background: var(--card-bg);
-        color: var(--text-primary);
-        padding: 0.5rem;
-        border-radius: 0.25rem;
+      .feature-card p {
         font-size: 0.875rem;
-        white-space: nowrap;
-        z-index: 20;
-        opacity: 0;
-        transition: opacity 0.2s;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .navbar {
+        padding: 1rem 4rem;
       }
 
-      .sidebar-tabs .tab:hover::after {
-        opacity: 1;
+      .hero h1 {
+        font-size: 4rem;
       }
 
-      #auth-panel {
-        width: 24rem;
-        right: 0;
-        left: auto;
-        top: 0;
-        height: 100vh;
-        border-radius: 1.5rem 0 0 1.5rem;
-        transform: translateX(100%);
-        box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
-      }
-
-      #auth-panel.open {
-        transform: translateX(0);
+      .hero p {
+        font-size: 1.5rem;
       }
     }
   </style>
 </head>
 <body class="light">
-  <main class="flex flex-col h-screen">
-    <div id="offline-warning" class="hidden">You are offline. Some features may not work.</div>
+  <main>
     <div id="custom-alert" class="custom-alert"></div>
-    <div id="overlay">
-      <div class="overlay-spinner"></div>
-    </div>
-    <button id="hamburger-button" class="fixed top-4 left-4 w-10 h-10 bg-black rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition">
-      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <path d="M4 6h16M4 12h16M4 18h16"/>
-      </svg>
-    </button>
-    <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-gray-900 flex flex-col">
-      <button id="close-sidebar" class="p-4">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-      <div class="sidebar-tabs">
-        <button class="tab" id="profile-tab" data-tooltip="Profile">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-          </svg>
-          <span>Profile</span>
-        </button>
-        <button class="tab" id="settings-tab" data-tooltip="Settings">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          <span>Settings</span>
-        </button>
+    <nav class="navbar">
+      <div class="navbar-logo">
+        <span class="logo-icon"></span>
+        <span>VYNIX</span>
       </div>
-    </div>
-    <div class="tab-container">
-      <div id="header-avatar" class="avatar"></div>
-      <button class="tab" id="profile-tab-mobile">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-        </svg>
-        Profile
-      </button>
-      <button class="tab" id="settings-tab-mobile">
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-          <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-        Settings
-      </button>
-    </div>
-    <div class="welcome-container" id="welcome-container">
-      <h1>Hey there, friend!</h1>
-    </div>
-    <div id="chat-messages" class="flex-1 overflow-y-auto"></div>
-    <div class="chat-input-container" id="chat-input-container">
-      <button id="image-upload-button" class="p-2">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-          <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-        </svg>
-      </button>
-      <input type="text" id="chat-input" placeholder="What's on your mind?" aria-label="Type your prompt">
-      <button id="send-button">
-        <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M5 12h14M5 12l6-6m-6 6l6 6"/>
-        </svg>
-      </button>
-    </div>
-    <div id="auth-panel">
-      <div id="auth-avatar" class="avatar"></div>
-      <div class="auth-tabs">
-        <div class="auth-tab active" data-tab="login">Login</div>
-        <div class="auth-tab" data-tab="signup">Signup</div>
+      <div class="nav-links">
+        <a href="home.html">Home</a>
+        <a href="features.html">Features</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
       </div>
-      <div class="auth-content active" id="login-content">
-        <input type="email" id="login-email" placeholder="Email" required>
-        <input type="password" id="login-password" placeholder="Password" required>
-        <button type="submit" id="login-button">Login</button>
-        <div class="google-button" id="google-login">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.51h5.84c-.25 1.37-.99 2.54-2.1 3.32v2.76h3.37c1.97-1.81 3.1-4.48 3.1-7.84z"/>
-            <path d="M12 23.5c2.81 0 5.17-.91 6.89-2.46l-3.37-2.76c-.94.63-2.14 1.01-3.52 1.01-2.7 0-4.99-1.82-5.8-4.27H2.71v2.68C4.42 20.91 7.96 23.5 12 23.5z"/>
-            <path d="M6.2 14.27c-.2-.61-.31-1.26-.31-1.94s.11-1.33.31-1.94V7.71H2.71c-.71 1.44-1.11 3.04-1.11 4.79s.4 3.35 1.11 4.79h3.49v-2.68z"/>
-            <path d="M12 5.69c1.54 0 2.92.53 4.01 1.56l3.01-3.01C17.17 2.67 14.81 1.5 12 1.5c-4.04 0-7.58 2.59-9.29 5.79h3.49v-2.68c.81 1.45 2.1 2.58 3.8 3.08z"/>
-          </svg>
-          Sign in with Google
+    </nav>
+    <nav class="mobile-nav">
+      <a href="home.html">Home</a>
+      <a href="features.html">Features</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Meet <span>VYNIX</span> AI</h1>
+        <p>Develop. Connect. Your intelligent companion crafted to inspire and innovate.</p>
+        <button class="cta-button" id="get-started-button">Get Started</button>
+      </div>
+    </section>
+    <section class="features" id="features">
+      <h2>Why Choose Vynix AI?</h2>
+      <div class="feature-grid">
+        <div class="feature-card" style="--order: 1;">
+          <h3>Smart Conversations</h3>
+          <p>Engage in natural, fun chats designed to feel like talking to a friend.</p>
+        </div>
+        <div class="feature-card" style="--order: 2;">
+          <h3>Image Analysis</h3>
+          <p>Upload images and get lively, insightful descriptions.</p>
+        </div>
+        <div class="feature-card" style="--order: 3;">
+          <h3>Customizable Interface</h3>
+          <p>Switch between light and dark modes for a personalized experience.</p>
         </div>
       </div>
-      <div class="auth-content" id="signup-content">
-        <input type="text" id="signup-name" placeholder="Full Name" required>
-        <input type="email" id="signup-email" placeholder="Email" required>
-        <input type="password" id="signup-password" placeholder="Password" required>
-        <button type="submit" id="signup-button">Signup</button>
-        <div class="google-button" id="google-signup">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.51h5.84c-.25 1.37-.99 2.54-2.1 3.32v2.76h3.37c1.97-1.81 3.1-4.48 3.1-7.84z"/>
-            <path d="M12 23.5c2.81 0 5.17-.91 6.89-2.46l-3.37-2.76c-.94.63-2.14 1.01-3.52 1.01-2.7 0-4.99-1.82-5.8-4.27H2.71v2.68C4.42 20.91 7.96 23.5 12 23.5z"/>
-            <path d="M6.2 14.27c-.2-.61-.31-1.26-.31-1.94s.11-1.33.31-1.94V7.71H2.71c-.71 1.44-1.11 3.04-1.11 4.79s.4 3.35 1.11 4.79h3.49v-2.68z"/>
-            <path d="M12 5.69c1.54 0 2.92.53 4.01 1.56l3.01-3.01C17.17 2.67 14.81 1.5 12 1.5c-4.04 0-7.58 2.59-9.29 5.79h3.49v-2.68c.81 1.45 2.1 2.58 3.8 3.08z"/>
-          </svg>
-          Sign up with Google
-        </div>
-      </div>
-    </div>
-    <div id="profile-modal" class="modal">
-      <div class="modal-content">
-        <button class="close-modal">&times;</button>
-        <h2>Profile</h2>
-        <div id="profile-content" class="text-center">
-          <div id="profile-avatar" class="avatar mx-auto mb-4"></div>
-          <p id="profile-name" class="text-lg font-semibold text-[var(--text-primary)]"></p>
-          <p id="profile-email" class="text-sm text-[var(--text-secondary)]"></p>
-          <button id="signout-button" class="mt-4 px-4 py-2 bg-[var(--highlight)] text-[var(--text-primary)] rounded-full hover:bg-[#2C928D]">Sign Out</button>
-        </div>
-      </div>
-    </div>
-    <div id="settings-modal" class="modal">
+    </section>
+    <div id="settings-modal" class="settings-modal">
       <div class="modal-content">
         <button class="close-modal">&times;</button>
         <h2>Settings</h2>
@@ -850,498 +527,70 @@
       </div>
     </div>
   </main>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBOyZ3As4GTuNvjemvPF_SpsC6m6vqtNhc",
-      authDomain: "fire-b-a8878.firebaseapp.com",
-      projectId: "fire-b-a8878",
-      storageBucket: "fire-b-a8878.firebasestorage.app",
-      messagingSenderId: "658673187627",
-      appId: "1:658673187627:web:6e4c29af661785f0afa36e",
-      measurementId: "G-V4W97VMSKL"
-    };
-
-    const state = {
-      messages: [],
-      geminiApiKey: 'AIzaSyD79iPuCs7sW4DQJ7ij9SZZXtEJm6po8K8',
-      hasChatted: false
-    };
-
+  <script>
     const elements = {
-      chatMessages: document.getElementById('chat-messages'),
-      chatInput: document.getElementById('chat-input'),
-      chatInputContainer: document.getElementById('chat-input-container'),
-      sendButton: document.getElementById('send-button'),
-      imageUploadButton: document.getElementById('image-upload-button'),
-      welcomeContainer: document.getElementById('welcome-container'),
-      hamburgerButton: document.getElementById('hamburger-button'),
-      sidebar: document.getElementById('sidebar'),
-      closeSidebar: document.getElementById('close-sidebar'),
-      authPanel: document.getElementById('auth-panel'),
-      authTabs: document.querySelectorAll('.auth-tab'),
-      loginContent: document.getElementById('login-content'),
-      signupContent: document.getElementById('signup-content'),
-      loginButton: document.getElementById('login-button'),
-      signupButton: document.getElementById('signup-button'),
-      googleLogin: document.getElementById('google-login'),
-      googleSignup: document.getElementById('google-signup'),
-      loginEmail: document.getElementById('login-email'),
-      loginPassword: document.getElementById('login-password'),
-      signupName: document.getElementById('signup-name'),
-      signupEmail: document.getElementById('signup-email'),
-      signupPassword: document.getElementById('signup-password'),
-      authAvatar: document.getElementById('auth-avatar'),
-      headerAvatar: document.getElementById('header-avatar'),
-      offlineWarning: document.getElementById('offline-warning'),
       customAlert: document.getElementById('custom-alert'),
-      profileModal: document.getElementById('profile-modal'),
       settingsModal: document.getElementById('settings-modal'),
-      profileTab: document.getElementById('profile-tab'),
       settingsTab: document.getElementById('settings-tab'),
-      profileTabMobile: document.getElementById('profile-tab-mobile'),
-      settingsTabMobile: document.getElementById('settings-tab-mobile'),
-      overlay: document.getElementById('overlay'),
+      getStartedButton: document.getElementById('get-started-button'),
       themeToggle: document.getElementById('theme-toggle'),
-      saveSettingsButton: document.getElementById('save-settings-button'),
-      signoutButton: document.getElementById('signout-button')
+      saveSettingsButton: document.getElementById('save-settings-button')
     };
-
-    let app, auth, provider;
 
     function showCustomAlert(message, duration = 3000) {
-      if (elements.customAlert) {
-        elements.customAlert.textContent = message;
-        elements.customAlert.style.display = 'block';
-        setTimeout(() => {
-          elements.customAlert.style.display = 'none';
-        }, duration);
-      }
-    }
-
-    function showOverlay(show = true) {
-      if (elements.overlay) {
-        elements.overlay.style.display = show ? 'flex' : 'none';
-      }
-    }
-
-    function initializeFirebase() {
-      app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
-      provider = new GoogleAuthProvider();
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          elements.authPanel.classList.remove('open');
-          elements.chatInput.disabled = false;
-          elements.sendButton.disabled = false;
-          if (elements.imageUploadButton) elements.imageUploadButton.disabled = false;
-          elements.welcomeContainer.querySelector('h1').textContent = `Hey there, ${user.displayName || 'friend'}!`;
-          elements.headerAvatar.textContent = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
-          elements.headerAvatar.classList.remove('hidden');
-        } else {
-          elements.authPanel.classList.add('open');
-          elements.chatInput.disabled = true;
-          elements.sendButton.disabled = true;
-          if (elements.imageUploadButton) elements.imageUploadButton.disabled = true;
-          elements.welcomeContainer.classList.add('hidden');
-          elements.sidebar.classList.remove('open');
-          elements.headerAvatar.classList.remove('hidden');
-          updateAvatar();
-        }
-      });
+      elements.customAlert.textContent = message;
+      elements.customAlert.style.display = 'block';
+      setTimeout(() => {
+        elements.customAlert.style.display = 'none';
+      }, duration);
     }
 
     function updateSettingsModal() {
       const savedTheme = localStorage.getItem('theme') || 'light';
-      if (elements.themeToggle) {
-        elements.themeToggle.checked = savedTheme === 'dark';
-      }
+      elements.themeToggle.checked = savedTheme === 'dark';
     }
 
     function saveSettings() {
-      if (elements.themeToggle) {
-        const isDarkMode = elements.themeToggle.checked;
-        document.body.classList.remove('light', 'dark');
-        document.body.classList.add(isDarkMode ? 'dark' : 'light');
-        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-        showCustomAlert('Settings saved!');
-        closeModal('settings-modal');
-      }
-    }
-
-    function openSettingsModal() {
-      updateSettingsModal();
-      openModal('settings-modal');
-    }
-
-    function updateProfileModal(user) {
-      const profileAvatar = document.getElementById('profile-avatar');
-      const profileName = document.getElementById('profile-name');
-      const profileEmail = document.getElementById('profile-email');
-      const signoutButton = document.getElementById('signout-button');
-
-      if (user) {
-        if (user.photoURL) {
-          profileAvatar.innerHTML = `<img src="${user.photoURL}" alt="Profile Picture" class="w-10 h-10 rounded-full">`;
-        } else {
-          const initials = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
-          profileAvatar.textContent = initials;
-        }
-        profileName.textContent = user.displayName || 'No Name Provided';
-        profileEmail.textContent = user.email || 'No Email Provided';
-        signoutButton.style.display = 'block';
-      } else {
-        profileName.textContent = 'Not Signed In';
-        profileEmail.textContent = 'Please sign in to view your profile.';
-        signoutButton.style.display = 'none';
-      }
-    }
-
-    function openProfileModal() {
-      const user = auth.currentUser;
-      updateProfileModal(user);
-      openModal('profile-modal');
-    }
-
-    function updateAvatar() {
-      const email = elements.loginEmail.value || elements.signupEmail.value || '';
-      const name = elements.signupName.value || '';
-      const text = (name || email || 'U').charAt(0).toUpperCase();
-      elements.authAvatar.textContent = text;
-      elements.headerAvatar.textContent = text;
-    }
-
-    function sanitizeInput(input) {
-      const div = document.createElement('div');
-      div.textContent = input;
-      return div.innerHTML;
-    }
-
-    function appendMessage(content, sender, isTyping = false, isImage = false, messageId = null) {
-      const div = document.createElement('div');
-      div.className = `message ${sender}${isTyping ? ' processing' : ''}`;
-      div.dataset.messageId = messageId || Date.now();
-      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      div.dataset.timestamp = timestamp;
-      if (isTyping) {
-        div.innerHTML = '<div class="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
-      } else if (isImage) {
-        const img = document.createElement('img');
-        img.src = content;
-        img.alt = 'Uploaded image';
-        div.appendChild(img);
-      } else {
-        div.innerHTML = sender === 'ai' ? marked.parse(content) : content;
-      }
-      if (sender === 'user' && !isTyping) {
-        const actions = document.createElement('div');
-        actions.className = 'message-actions';
-        actions.innerHTML = `
-          <button class="edit-btn" title="Edit"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M15 3h6v6m-1-3l-4 4M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H9l-4 4v12a2 2 0 002 2z"/></svg></button>
-          <button class="delete-btn" title="Delete"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
-        `;
-        div.appendChild(actions);
-      }
-      state.messages.push({ content, sender, isImage, timestamp: Date.now(), messageId: div.dataset.messageId });
-      if (sender === 'ai' && !isTyping) {
-        div.classList.add('vibrate');
-        if ('vibrate' in navigator) {
-          navigator.vibrate(100);
-        }
-      }
-      div.style.opacity = '0';
-      setTimeout(() => div.style.opacity = '1', 10);
-      elements.chatMessages.appendChild(div);
-      elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-      return div;
-    }
-
-    async function getAIResponse(prompt, imageUrl = null) {
-      if (!state.hasChatted) {
-        state.hasChatted = true;
-        elements.welcomeContainer.classList.add('hidden');
-      }
-      const tempMsg = appendMessage('', 'ai', true);
-      try {
-        let requestBody = {
-          contents: [{
-            parts: [{ text: `You are Vynix AI, crafted by Katlego in Mokopane, South Africa. Respond like a friendly, human buddy with a warm, conversational tone. Keep it concise and fun! Query: ${prompt}` }]
-          }]
-        };
-        if (imageUrl) {
-          requestBody.contents[0].parts[0].text = `Hey, let's check out this image! Describe what you see in a fun, friendly way.`;
-          requestBody.contents[0].parts.push({ inlineData: { mimeType: 'image/jpeg', data: imageUrl } });
-        }
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.geminiApiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-        const data = await res.json();
-        const response = data.candidates[0].content.parts[0].text || 'Oops, something went wrong, pal!';
-        tempMsg.innerHTML = marked.parse(response);
-        tempMsg.classList.remove('processing');
-        state.messages.push({ text: response, sender: 'ai', timestamp: Date.now(), messageId: tempMsg.dataset.messageId });
-      } catch (error) {
-        tempMsg.textContent = 'Whoops, hit a snag! Try again?';
-        tempMsg.classList.remove('processing');
-        state.messages.push({ text: tempMsg.textContent, sender: 'user', timestamp: Date.now(), messageId: tempMsg.dataset.messageId });
-        console.error('API Error:', error);
-      }
-    }
-
-    function handleMessageActions() {
-      if (elements.chatMessages) {
-        elements.chatMessages.addEventListener('click', (e) => {
-          if (e.target.closest('.delete-btn')) {
-            const messageDiv = e.target.closest('.message');
-            const messageId = messageDiv.dataset.messageId;
-            messageDiv.remove();
-            state.messages = state.messages.filter(msg => msg.messageId !== messageId);
-          }
-          if (e.target.closest('.edit-btn')) {
-            const messageDiv = e.target.closest('.message');
-            const messageId = messageDiv.dataset.messageId;
-            const message = state.messages.find(msg => msg.messageId === messageId);
-            const newContent = prompt('Edit your message:', message.content);
-            if (newContent && newContent.trim()) {
-              messageDiv.textContent = newContent;
-              message.content = newContent;
-            }
-          }
-        });
-      }
+      const isDarkMode = elements.themeToggle.checked;
+      document.body.classList.remove('light', 'dark');
+      document.body.classList.add(isDarkMode ? 'dark' : 'light');
+      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+      showCustomAlert('Settings saved!');
+      closeModal('settings-modal');
     }
 
     function openModal(modalId) {
       const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.style.display = 'block';
-      }
+      modal.style.display = 'block';
     }
 
     function closeModal(modalId) {
       const modal = document.getElementById(modalId);
-      if (modal) {
-        modal.style.display = 'none';
-      }
+      modal.style.display = 'none';
     }
 
     function setupEventListeners() {
-      if (elements.settingsTab) {
-        elements.settingsTab.addEventListener('click', openSettingsModal);
-      }
-      if (elements.settingsTabMobile) {
-        elements.settingsTabMobile.addEventListener('click', openSettingsModal);
-      }
-      if (elements.profileTab) {
-        elements.profileTab.addEventListener('click', openProfileModal);
-      }
-      if (elements.profileTabMobile) {
-        elements.profileTabMobile.addEventListener('click', openProfileModal);
-      }
-      if (elements.headerAvatar) {
-        elements.headerAvatar.addEventListener('click', openProfileModal);
-      }
+      elements.getStartedButton.addEventListener('click', () => {
+        showCustomAlert('Ready to explore Vynix AI? Coming soon!');
+      });
 
       document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', () => {
           const modal = btn.closest('.modal');
-          if (modal) {
-            modal.style.display = 'none';
-          }
+          modal.style.display = 'none';
         });
       });
 
       window.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal')) {
+        if (e.target.classList.contains('settings-modal')) {
           e.target.style.display = 'none';
         }
       });
 
-      if (elements.signoutButton) {
-        elements.signoutButton.addEventListener('click', async () => {
-          try {
-            await auth.signOut();
-            closeModal('profile-modal');
-            showCustomAlert('Signed out successfully!');
-          } catch (error) {
-            showCustomAlert('Sign out failed: ' + error.message);
-            console.error('Sign Out Error:', error);
-          }
-        });
-      }
-
-      if (elements.saveSettingsButton) {
-        elements.saveSettingsButton.addEventListener('click', saveSettings);
-      }
-
-      if (elements.authTabs) {
-        elements.authTabs.forEach(tab => {
-          tab.addEventListener('click', () => {
-            elements.authTabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            elements.loginContent.classList.remove('active');
-            elements.signupContent.classList.remove('active');
-            document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
-            updateAvatar();
-          });
-        });
-      }
-
-      if (elements.loginEmail) elements.loginEmail.addEventListener('input', updateAvatar);
-      if (elements.signupName) elements.signupName.addEventListener('input', updateAvatar);
-      if (elements.signupEmail) elements.signupEmail.addEventListener('input', updateAvatar);
-
-      if (elements.loginButton) {
-        elements.loginButton.addEventListener('click', async () => {
-          const email = elements.loginEmail.value.trim();
-          const password = elements.loginPassword.value.trim();
-          if (!email || !password) {
-            showCustomAlert('Please enter both email and password.');
-            return;
-          }
-          try {
-            await signInWithEmailAndPassword(auth, email, password);
-          } catch (error) {
-            showCustomAlert('Login failed: ' + error.message);
-            console.error('Login Error:', error);
-          }
-        });
-      }
-
-      if (elements.signupButton) {
-        elements.signupButton.addEventListener('click', async () => {
-          const name = elements.signupName.value.trim();
-          const email = elements.signupEmail.value.trim();
-          const password = elements.signupPassword.value.trim();
-          if (!name || !email || !password) {
-            showCustomAlert('Please fill in all fields.');
-            return;
-          }
-          try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            await userCredential.user.updateProfile({ displayName: name });
-          } catch (error) {
-            showCustomAlert('Signup failed: ' + error.message);
-            console.error('Signup Error:', error);
-          }
-        });
-      }
-
-      if (elements.googleLogin) {
-        elements.googleLogin.addEventListener('click', async () => {
-          try {
-            await signInWithPopup(auth, provider);
-          } catch (error) {
-            showCustomAlert('Google login failed: ' + error.message);
-            console.error('Google Login Error:', error);
-          }
-        });
-      }
-
-      if (elements.googleSignup) {
-        elements.googleSignup.addEventListener('click', async () => {
-          try {
-            await signInWithPopup(auth, provider);
-          } catch (error) {
-            showCustomAlert('Google signup failed: ' + error.message);
-            console.error('Google Signup Error:', error);
-          }
-        });
-      }
-
-      if (elements.sendButton) {
-        elements.sendButton.addEventListener('click', async () => {
-          const prompt = sanitizeInput(elements.chatInput.value.trim());
-          if (!prompt) return;
-          elements.chatInput.value = '';
-          appendMessage(prompt, 'user');
-          await getAIResponse(prompt);
-        });
-      }
-
-      if (elements.chatInput) {
-        elements.chatInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            elements.sendButton.click();
-          }
-        });
-
-        elements.chatInput.addEventListener('input', () => {
-          elements.chatInputContainer.classList.add('typing');
-          clearTimeout(elements.chatInput.dataset.typingTimeout);
-          elements.chatInput.dataset.typingTimeout = setTimeout(() => {
-            elements.chatInputContainer.classList.remove('typing');
-          }, 1000);
-        });
-      }
-
-      if (elements.hamburgerButton) {
-        elements.hamburgerButton.addEventListener('click', () => {
-          elements.sidebar.classList.add('open');
-        });
-      }
-
-      if (elements.closeSidebar) {
-        elements.closeSidebar.addEventListener('click', () => {
-          elements.sidebar.classList.remove('open');
-        });
-      }
-
-      document.addEventListener('click', (e) => {
-        if (elements.sidebar.classList.contains('open') && !elements.sidebar.contains(e.target) && !elements.hamburgerButton.contains(e.target)) {
-          elements.sidebar.classList.remove('open');
-        }
-      });
-
-      if (elements.imageUploadButton) {
-        elements.imageUploadButton.addEventListener('click', () => {
-          const input = document.createElement('input');
-          input.type = 'file';
-          input.accept = 'image/*';
-          input.onchange = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', 'banter_box');
-            const tempMsg = appendMessage('', 'user', true);
-            try {
-              const uploadResponse = await fetch('https://api.cloudinary.com/v1_1/dqkujefxj/image/upload', {
-                method: 'POST',
-                body: formData
-              });
-              const uploadData = await uploadResponse.json();
-              const imageUrl = uploadData.secure_url;
-              tempMsg.innerHTML = '';
-              tempMsg.classList.remove('processing');
-              appendMessage(imageUrl, 'user', false, true);
-              await getAIResponse('Describe this image', imageUrl);
-            } catch (error) {
-              tempMsg.textContent = 'Oops, couldn’t upload the image!';
-              tempMsg.classList.remove('processing');
-              state.messages.push({ text: tempMsg.textContent, sender: 'user', timestamp: Date.now(), messageId: tempMsg.dataset.messageId });
-              console.error('Upload Error:', error);
-            }
-          };
-          input.click();
-        });
-      }
-
-      window.addEventListener('online', () => {
-        if (elements.offlineWarning) elements.offlineWarning.classList.add('hidden');
-      });
-      window.addEventListener('offline', () => {
-        if (elements.offlineWarning) elements.offlineWarning.classList.remove('hidden');
-      });
+      elements.saveSettingsButton.addEventListener('click', saveSettings);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      initializeFirebase();
-      handleMessageActions();
       setupEventListeners();
       const savedTheme = localStorage.getItem('theme') || 'light';
       document.body.classList.add(savedTheme);
