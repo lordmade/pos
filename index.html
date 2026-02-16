@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <meta name="theme-color" content="#0D7377">
-  <meta name="description" content="AI-powered medical assistant for health information and guidance">
+  <meta name="description" content="AI-powered medical assistant for health information">
  
   <title>MediCare AI • Health Assistant</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
@@ -82,12 +82,13 @@
       flex-direction: column;
       padding: 16px;
       z-index: 100;
+      margin-top: 48px;
     }
     
     @media (max-width: 768px) {
       .sidebar {
         position: fixed;
-        inset: 0 auto 0 0;
+        inset: 48px auto 0 0;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         box-shadow: 4px 0 24px rgba(0,0,0,0.1);
@@ -169,7 +170,6 @@
     
     .nav-item:hover { background: var(--bg-body); color: var(--text-main); }
     .nav-item.active { background: rgba(13, 115, 119, 0.1); color: var(--primary); font-weight: 500; }
-    
     .nav-item .material-symbols-rounded { font-size: 20px; }
     
     .sidebar-footer {
@@ -215,6 +215,7 @@
       background: var(--bg-surface);
       position: relative;
       overflow: hidden;
+      margin-top: 48px;
     }
     
     .top-bar {
@@ -381,6 +382,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      max-width: 70%;
     }
     
     .message-bubble {
@@ -388,6 +390,7 @@
       border-radius: 20px;
       line-height: 1.6;
       font-size: 0.95rem;
+      word-wrap: break-word;
     }
     
     .message.ai .message-bubble {
@@ -412,17 +415,6 @@
     }
     
     .message.user .message-meta { justify-content: flex-end; }
-    
-    /* Medical Disclaimer in Chat */
-    .medical-notice {
-      background: #DBEAFE;
-      border-left: 4px solid #3B82F6;
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin: 8px 0;
-      font-size: 0.85rem;
-      color: #1E40AF;
-    }
     
     /* Input Area */
     .input-container {
@@ -464,6 +456,7 @@
     }
     
     .chat-input::placeholder { color: var(--text-muted); }
+    .chat-input:disabled { opacity: 0.6; cursor: not-allowed; }
     
     .input-actions {
       display: flex;
@@ -485,20 +478,9 @@
       transition: all 0.2s;
     }
     
-    .icon-btn:hover {
-      background: var(--bg-surface);
-      color: var(--text-main);
-    }
-    
-    .icon-btn.primary {
-      background: var(--primary);
-      color: white;
-    }
-    
-    .icon-btn.primary:hover {
-      background: var(--primary-light);
-    }
-    
+    .icon-btn:hover { background: var(--bg-surface); color: var(--text-main); }
+    .icon-btn.primary { background: var(--primary); color: white; }
+    .icon-btn.primary:hover { background: var(--primary-light); }
     .icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     
     /* Auth Modal */
@@ -525,16 +507,8 @@
       box-shadow: 0 20px 60px rgba(0,0,0,0.2);
     }
     
-    .auth-modal h2 {
-      margin-bottom: 8px;
-      color: var(--text-main);
-    }
-    
-    .auth-modal p {
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      font-size: 0.9rem;
-    }
+    .auth-modal h2 { margin-bottom: 8px; color: var(--text-main); }
+    .auth-modal p { color: var(--text-secondary); margin-bottom: 24px; font-size: 0.9rem; }
     
     .google-btn {
       width: 100%;
@@ -591,24 +565,22 @@
     
     .overlay.active { opacity: 1; pointer-events: auto; }
     
-    /* Critical Warning Modal */
-    .critical-modal {
+    /* Critical Warning */
+    .critical-warning {
       background: #FEF2F2;
       border: 2px solid #EF4444;
-      border-radius: 16px;
-      padding: 24px;
+      border-radius: 12px;
+      padding: 16px;
       margin: 16px 0;
-      display: none;
+      color: #991B1B;
     }
     
-    .critical-modal.active { display: block; }
-    
-    .critical-modal h3 {
-      color: #DC2626;
+    .critical-warning h3 {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
+      color: #DC2626;
     }
   </style>
 </head>
@@ -635,9 +607,7 @@
       New Consultation
     </button>
     
-    <div class="nav-list" id="historyList">
-      <!-- History items populated here -->
-    </div>
+    <div class="nav-list" id="historyList"></div>
     
     <div class="sidebar-footer">
       <div class="user-pill" id="userPill" onclick="toggleAuth()">
@@ -662,7 +632,7 @@
         <span>Not a substitute for professional medical advice</span>
       </div>
       
-      <div style="width:40px"></div> <!-- Spacer for balance -->
+      <div style="width:40px"></div>
     </div>
 
     <div class="chat-container" id="chatContainer">
@@ -671,7 +641,7 @@
           <span class="material-symbols-rounded" style="font-size:40px">stethoscope</span>
         </div>
         <h2>Your Personal Health Assistant</h2>
-        <p>Describe your symptoms or health concerns, and I'll provide general health information and guidance. Remember, this is for informational purposes only.</p>
+        <p>Describe your symptoms or health concerns, and I'll provide general health information. Remember, always consult a healthcare professional for medical advice.</p>
         
         <div class="suggestions-grid">
           <div class="suggestion-card" onclick="setInput('I have a headache and fever, what could it be?')">
@@ -720,7 +690,7 @@
         <span class="material-symbols-rounded">local_hospital</span>
       </div>
       <h2>Sign in to MediCare AI</h2>
-      <p>Securely access your health consultations and history</p>
+      <p>Securely access your health consultations</p>
       <button class="google-btn" onclick="signInWithGoogle()">
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -739,7 +709,6 @@
       apiKey: "AIzaSyBOyZ3As4GTuNvjemvPF_SpsC6m6vqtNhc",
       authDomain: "fire-b-a8878.firebaseapp.com",
       projectId: "fire-b-a8878",
-      databaseURL: "https://fire-b-a8878-default-rtdb.firebaseio.com",
       appId: "1:658673187627:web:6e4c29af661785f0afa36e"
     };
 
@@ -747,21 +716,25 @@
     const auth = firebase.auth();
     const remoteConfig = firebase.remoteConfig();
     
-    let API_KEY = "";
+    // xAI Configuration
+    let XAI_API_KEY = "";
+    const MODEL_ID = "grok-4-1-fast-reasoning";
+    
     let currentUser = null;
-    let currentConversationId = null;
     let isProcessing = false;
+    let conversationHistory = [];
     
     // ==================== INITIALIZATION ====================
     async function initializeApp() {
       remoteConfig.settings = { minimumFetchIntervalMillis: 0 };
       try {
         await remoteConfig.fetchAndActivate();
-        API_KEY = remoteConfig.getValue('openai_api_key').asString() || 
-                  remoteConfig.getValue('medical_api_key').asString();
-        console.log('API Key loaded from Remote Config');
+        XAI_API_KEY = remoteConfig.getValue('xai_api_key').asString();
+        console.log('xAI API Key loaded from Remote Config');
       } catch (error) {
         console.error('Remote Config error:', error);
+        // Fallback for development - replace with your key
+        XAI_API_KEY = "your-xai-api-key-here";
       }
     }
     
@@ -769,15 +742,20 @@
     auth.onAuthStateChanged(user => {
       currentUser = user;
       updateUI(user);
+      
+      const input = document.getElementById('userInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const newChatBtn = document.getElementById('newChatBtn');
+      
       if (user) {
-        loadConversations();
-        document.getElementById('userInput').disabled = false;
-        document.getElementById('sendBtn').disabled = false;
-        document.getElementById('newChatBtn').disabled = false;
+        input.disabled = false;
+        sendBtn.disabled = false;
+        newChatBtn.disabled = false;
+        loadHistory();
       } else {
-        document.getElementById('userInput').disabled = true;
-        document.getElementById('sendBtn').disabled = true;
-        document.getElementById('newChatBtn').disabled = true;
+        input.disabled = true;
+        sendBtn.disabled = true;
+        newChatBtn.disabled = true;
       }
     });
     
@@ -802,10 +780,10 @@
       if (!currentUser) {
         document.getElementById('authModal').classList.add('active');
       } else {
-        // Sign out
         if (confirm('Sign out of MediCare AI?')) {
           auth.signOut();
-          location.reload();
+          conversationHistory = [];
+          startNewChat();
         }
       }
     }
@@ -818,7 +796,7 @@
       });
     }
     
-    // ==================== CHAT FUNCTIONS ====================
+    // ==================== UI FUNCTIONS ====================
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('active');
@@ -837,17 +815,24 @@
       const input = document.getElementById('userInput');
       input.value = text;
       input.focus();
+      autoResize(input);
+    }
+    
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
     }
     
     function startNewChat() {
-      currentConversationId = null;
-      document.getElementById('chatContainer').innerHTML = `
+      conversationHistory = [];
+      const container = document.getElementById('chatContainer');
+      container.innerHTML = `
         <div class="welcome-screen" id="welcomeScreen">
           <div class="welcome-icon">
             <span class="material-symbols-rounded" style="font-size:40px">stethoscope</span>
           </div>
           <h2>Your Personal Health Assistant</h2>
-          <p>Describe your symptoms or health concerns, and I'll provide general health information and guidance. Remember, this is for informational purposes only.</p>
+          <p>Describe your symptoms or health concerns, and I'll provide general health information. Remember, always consult a healthcare professional for medical advice.</p>
           
           <div class="suggestions-grid">
             <div class="suggestion-card" onclick="setInput('I have a headache and fever, what could it be?')">
@@ -873,6 +858,7 @@
       closeSidebar();
     }
     
+    // ==================== MESSAGE HANDLING ====================
     async function sendMessage() {
       if (isProcessing || !currentUser) return;
       
@@ -883,86 +869,104 @@
       
       isProcessing = true;
       input.value = '';
+      autoResize(input);
       
       // Remove welcome screen if present
       const welcome = document.getElementById('welcomeScreen');
       if (welcome) welcome.remove();
       
+      // Check for emergency keywords
+      const emergencyKeywords = ['chest pain', 'can\'t breathe', 'unconscious', 'severe bleeding', 'heart attack', 'stroke', 'suicide', 'kill myself', 'not breathing', 'choking'];
+      const isEmergency = emergencyKeywords.some(keyword => message.toLowerCase().includes(keyword));
+      
       // Add user message
       addMessage('user', message);
+      
+      if (isEmergency) {
+        addMessage('ai', `🚨 **EMERGENCY WARNING** 🚨\n\nYour message indicates a potential medical emergency. **Call 911 immediately or go to the nearest emergency room.**\n\nDo not wait for AI assistance. If you're unable to call, ask someone nearby to call for you.\n\n**Symptoms requiring immediate attention:**\n- Chest pain or pressure\n- Difficulty breathing\n- Severe bleeding\n- Loss of consciousness\n- Signs of stroke (FAST: Face drooping, Arm weakness, Speech difficulty, Time to call 911)\n\nYour life may be at risk. Seek help now.`);
+        isProcessing = false;
+        return;
+      }
       
       // Show typing indicator
       const typingId = showTyping();
       
       try {
-        // Check for emergency keywords
-        const emergencyKeywords = ['chest pain', 'can\'t breathe', 'unconscious', 'severe bleeding', 'heart attack', 'stroke', 'suicide', 'kill myself'];
-        const isEmergency = emergencyKeywords.some(keyword => message.toLowerCase().includes(keyword));
-        
-        if (isEmergency) {
-          removeTyping(typingId);
-          addMessage('ai', `🚨 **EMERGENCY WARNING** 🚨\n\nYour message indicates a potential medical emergency. \n\n**Call 911 immediately or go to the nearest emergency room.**\n\nDo not wait for AI assistance. If you're unable to call, ask someone nearby to call for you.\n\n**This is not a drill. Your life may be at risk.**`);
-          isProcessing = false;
-          return;
-        }
-        
-        // Call Medical AI API
-        const response = await fetchMedicalAdvice(message);
+        // Call xAI API
+        const response = await fetchXAIResponse(message);
         removeTyping(typingId);
         addMessage('ai', response);
         
-        // Save to history (simplified - implement with your backend)
-        saveConversation(message, response);
+        // Save to history
+        conversationHistory.push({ role: 'user', content: message });
+        conversationHistory.push({ role: 'assistant', content: response });
+        saveToHistory(message, response);
         
       } catch (error) {
         removeTyping(typingId);
         addMessage('ai', 'I apologize, but I encountered an error processing your health inquiry. Please try again or consult a healthcare professional directly.');
-        console.error('Medical AI Error:', error);
+        console.error('xAI API Error:', error);
       }
       
       isProcessing = false;
     }
     
-    async function fetchMedicalAdvice(message) {
-      // Using OpenAI GPT-4 or your preferred medical AI API
-      // Configure this endpoint in Firebase Remote Config
-      
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            {
-              role: 'system',
-              content: `You are MediCare AI, a helpful medical information assistant. 
-              
-IMPORTANT GUIDELINES:
+    async function fetchXAIResponse(message) {
+      // Prepare messages with conversation history
+      const messages = [
+        {
+          role: "system",
+          content: `You are MediCare AI, a helpful medical information assistant. 
+
+CRITICAL GUIDELINES:
 1. Always include a disclaimer that you are an AI, not a doctor
-2. For serious symptoms, urge users to seek professional medical care
-3. Never provide definitive diagnoses - only general information
-4. Be empathetic but professional
-5. Use clear, simple language
-6. If unsure, recommend consulting a healthcare provider
-7. Never prescribe medications or dosages
-8. Focus on educational information only
+2. For serious symptoms, urge users to seek professional medical care immediately
+3. Never provide definitive diagnoses - only general health information
+4. Be empathetic, clear, and cautious
+5. Use simple language that patients can understand
+6. If unsure about anything, recommend consulting a healthcare provider
+7. Never prescribe medications or specific dosages
+8. Focus on educational information and general guidance only
+9. Always prioritize safety over completeness
 
 Current date: ${new Date().toISOString().split('T')[0]}`
-            },
-            {
-              role: 'user',
-              content: message
-            }
-          ],
+        }
+      ];
+      
+      // Add conversation history (last 10 messages to stay within token limits)
+      const recentHistory = conversationHistory.slice(-10);
+      recentHistory.forEach(msg => {
+        messages.push({
+          role: msg.role === 'assistant' ? 'assistant' : 'user',
+          content: msg.content
+        });
+      });
+      
+      // Add current message
+      messages.push({
+        role: "user",
+        content: message
+      });
+      
+      const response = await fetch("https://api.x.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${XAI_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: MODEL_ID,
+          messages: messages,
           temperature: 0.7,
-          max_tokens: 800
+          max_tokens: 800,
+          stream: false
         })
       });
       
-      if (!response.ok) throw new Error('API request failed');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'API request failed');
+      }
       
       const data = await response.json();
       return data.choices[0].message.content;
@@ -975,12 +979,17 @@ Current date: ${new Date().toISOString().split('T')[0]}`
       
       const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       
+      // Format content (basic markdown)
+      let formattedContent = content
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+      
       messageDiv.innerHTML = `
         <div class="message-avatar">
           ${role === 'ai' ? 'AI' : currentUser?.displayName?.[0] || 'U'}
         </div>
         <div class="message-content">
-          <div class="message-bubble">${formatContent(content)}</div>
+          <div class="message-bubble">${formattedContent}</div>
           <div class="message-meta">
             ${role === 'ai' ? '<span class="material-symbols-rounded" style="font-size:12px">verified</span> MediCare AI • ' : ''}
             ${time}
@@ -990,14 +999,6 @@ Current date: ${new Date().toISOString().split('T')[0]}`
       
       container.appendChild(messageDiv);
       container.scrollTop = container.scrollHeight;
-    }
-    
-    function formatContent(text) {
-      // Simple markdown formatting
-      return text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\n/g, '<br>')
-        .replace(/🚨/g, '<span style="font-size:1.2em">🚨</span>');
     }
     
     function showTyping() {
@@ -1028,32 +1029,34 @@ Current date: ${new Date().toISOString().split('T')[0]}`
       if (el) el.remove();
     }
     
-    function saveConversation(userMsg, aiResponse) {
-      // Implement with your Firebase Realtime Database or Firestore
-      // This is a placeholder for the conversation history feature
-      if (!currentConversationId) {
-        currentConversationId = 'consult_' + Date.now();
-      }
-      
-      // Save to localStorage for demo (replace with Firebase)
+    // ==================== HISTORY MANAGEMENT ====================
+    function saveToHistory(userMsg, aiResponse) {
+      // Simple localStorage history for demo
+      // In production, use Firebase Firestore with proper HIPAA compliance
       const history = JSON.parse(localStorage.getItem('medical_history') || '[]');
-      history.unshift({
-        id: currentConversationId,
+      const consultation = {
+        id: Date.now().toString(),
         preview: userMsg.substring(0, 50) + '...',
         timestamp: Date.now(),
-        user: userMsg,
-        ai: aiResponse
-      });
+        messages: conversationHistory
+      };
+      
+      history.unshift(consultation);
       localStorage.setItem('medical_history', JSON.stringify(history.slice(0, 20)));
-      loadConversations();
+      loadHistory();
     }
     
-    function loadConversations() {
+    function loadHistory() {
       const list = document.getElementById('historyList');
       const history = JSON.parse(localStorage.getItem('medical_history') || '[]');
       
+      if (history.length === 0) {
+        list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">No consultations yet</div>';
+        return;
+      }
+      
       list.innerHTML = history.map(item => `
-        <div class="nav-item" onclick="loadChat('${item.id}')">
+        <div class="nav-item" onclick="loadConsultation('${item.id}')">
           <span class="material-symbols-rounded">medical_services</span>
           <div style="flex:1; overflow:hidden;">
             <div style="font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
@@ -1067,15 +1070,18 @@ Current date: ${new Date().toISOString().split('T')[0]}`
       `).join('');
     }
     
-    function loadChat(id) {
-      // Load specific conversation
+    function loadConsultation(id) {
       const history = JSON.parse(localStorage.getItem('medical_history') || '[]');
-      const chat = history.find(h => h.id === id);
-      if (chat) {
-        currentConversationId = id;
+      const consultation = history.find(h => h.id === id);
+      
+      if (consultation) {
+        conversationHistory = consultation.messages || [];
         document.getElementById('chatContainer').innerHTML = '';
-        addMessage('user', chat.user);
-        addMessage('ai', chat.ai);
+        
+        conversationHistory.forEach(msg => {
+          addMessage(msg.role === 'assistant' ? 'ai' : 'user', msg.content);
+        });
+        
         closeSidebar();
       }
     }
@@ -1089,8 +1095,7 @@ Current date: ${new Date().toISOString().split('T')[0]}`
     });
     
     document.getElementById('userInput').addEventListener('input', function() {
-      this.style.height = 'auto';
-      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      autoResize(this);
     });
     
     // Initialize
